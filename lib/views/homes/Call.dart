@@ -52,6 +52,7 @@ class _CallState extends State<Call> {
                 ]),
           ),
           Container(
+            height: 75.h,
             child: Center(
               child: Text(
                 'Call',

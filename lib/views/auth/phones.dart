@@ -19,11 +19,7 @@ class Phones extends StatefulWidget {
 class _PhonesState extends State<Phones> {
   var countrycode = '+60';
   TextEditingController phoneNumber = new TextEditingController();
-  FirebaseAuth auth = FirebaseAuth.instance;
 
-  bool otpVisibility = false;
-
-  String verificationID = "";
   @override
   void initState() {
     // TODO: implement initState
@@ -32,6 +28,39 @@ class _PhonesState extends State<Phones> {
       setState(() {});
     });
     super.initState();
+  }
+
+  FirebaseAuth auth = FirebaseAuth.instance;
+  String verificationID = "";
+  void loginWithPhone(pho) async {
+    auth.verifyPhoneNumber(
+      phoneNumber: pho,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await auth.signInWithCredential(credential).then((value) {
+          print("You are logged in successfully");
+          print(credential.toString());
+        });
+      },
+      timeout: Duration(seconds: 30),
+      verificationFailed: (FirebaseAuthException e) {
+        print(e.message);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        //otpVisibility = true;
+        verificationID = verificationId;
+        print('object');
+        print(verificationId);
+        print(resendToken);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => OtpVerification(
+                      phonesvid: verificationID,
+                    )));
+        setState(() {});
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
   }
 
   @override
@@ -92,6 +121,7 @@ class _PhonesState extends State<Phones> {
       )),
       bottomNavigationBar: GestureDetector(
         child: Container(
+            width: 100.w,
             margin: sheet.pads(5.w, .5.h),
             decoration: BoxDecoration(
                 color: Colors.grey, borderRadius: BorderRadius.circular(10)),
@@ -114,27 +144,6 @@ class _PhonesState extends State<Phones> {
           }
         },
       ),
-    );
-  }
-
-  void loginWithPhone(pho) async {
-    auth.verifyPhoneNumber(
-      phoneNumber: pho.toString(),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await auth.signInWithCredential(credential).then((value) {
-          Navigator.push(context,
-              CupertinoPageRoute(builder: (_) => OtpVerification(phones: pho)));
-        });
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        print(e.message);
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        otpVisibility = true;
-        verificationID = verificationId;
-        setState(() {});
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
     );
   }
 

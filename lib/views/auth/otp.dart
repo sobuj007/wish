@@ -9,54 +9,24 @@ import 'package:Wish/views/mainlayouts.dart';
 import '../../main.dart';
 
 class OtpVerification extends StatefulWidget {
-  final phones;
+  final phonesvid;
 
-  OtpVerification({Key? key, this.phones}) : super(key: key);
+  OtpVerification({Key? key, required this.phonesvid}) : super(key: key);
 
   @override
   State<OtpVerification> createState() => _OtpVerificationState();
 }
 
 class _OtpVerificationState extends State<OtpVerification> {
-  var otp;
-  late String _verificationCode;
+  String otp = '';
+  late String verificationCode;
   FirebaseAuth auth = FirebaseAuth.instance;
-
-  bool otpVisibility = false;
 
   String verificationID = "";
   @override
   void initState() {
     super.initState();
-  }
-
-  void verifyOTP() async {
-    PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationID, smsCode: otp.text);
-
-    await auth.signInWithCredential(credential).then(
-      (value) {
-        print("You are logged in successfully");
-        // Fluttertoast.showToast(
-        //   msg: "You are logged in successfully",
-        //   toastLength: Toast.LENGTH_SHORT,
-        //   gravity: ToastGravity.CENTER,
-        //   timeInSecForIosWeb: 1,
-        //   backgroundColor: Colors.red,
-        //   textColor: Colors.white,
-        //   fontSize: 16.0,
-        // );
-      },
-    ).whenComplete(
-      () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainLayouts(),
-          ),
-        );
-      },
-    );
+    verificationID = widget.phonesvid;
   }
 
   @override
@@ -133,6 +103,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                       //runs when every textfield is filled
                       onSubmit: (String verificationCode) {
                         otp = verificationCode;
+                        setState(() {});
                       }, // end onSubmit
                     ),
                   ),
@@ -146,8 +117,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                     borderRadius: BorderRadius.circular(25)),
                 child: GestureDetector(
                   onTap: () async {
-                    Navigator.push(context,
-                        CupertinoPageRoute(builder: (_) => MainLayouts()));
+                    verifyOTP();
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
@@ -182,5 +152,22 @@ class _OtpVerificationState extends State<OtpVerification> {
         ),
       )),
     );
+  }
+
+  verifyOTP() async {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationID, smsCode: otp.toString());
+    print(credential);
+    print('Problem');
+
+    //await auth.signInWithCredential(credential).then((value) => {print(value)});
+    await auth.signInWithCredential(credential).then((result) {
+      print(result);
+
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => MainLayouts()));
+    }).catchError((e) {
+      print(e);
+    });
   }
 }

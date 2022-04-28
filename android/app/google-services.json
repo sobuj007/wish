@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "286334418886-ki7jhrtng2du02telc3v5cc2kb8htcec.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wish.my",
+            "certificate_hash": "837258241b447a66cc8e7d7aae58b08aefffac21"
+          }
+        },
+        {
           "client_id": "286334418886-f3eaibtioqlj5qdv2j9ctu70ebnhi9fv.apps.googleusercontent.com",
           "client_type": 3
         }

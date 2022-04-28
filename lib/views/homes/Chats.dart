@@ -1,3 +1,4 @@
+import 'package:Wish/views/homes/Singelchat.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:Wish/main.dart';
@@ -66,42 +67,48 @@ class _ChatsState extends State<Chats> {
         child: ListView.builder(
             itemCount: 4,
             itemBuilder: (BuildContext context, int index) {
-              return Column(
-                children: [
-                  ListTile(
-                    contentPadding: sheet.pads(3.w, 2.h),
-                    leading: CircleAvatar(
-                      backgroundColor: col.primary,
-                      radius: 40,
-                      child: CircleAvatar(
-                        radius: 35,
-                        backgroundImage: NetworkImage(
-                            'https://thumbs.dreamstime.com/b/person-gray-photo-placeholder-man-shirt-white-background-person-gray-photo-placeholder-man-132818487.jpg'),
+              return GestureDetector(
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: sheet.pads(3.w, 2.h),
+                      leading: CircleAvatar(
+                        backgroundColor: col.primary,
+                        radius: 40,
+                        child: CircleAvatar(
+                          radius: 35,
+                          backgroundImage: NetworkImage(
+                              'https://thumbs.dreamstime.com/b/person-gray-photo-placeholder-man-shirt-white-background-person-gray-photo-placeholder-man-132818487.jpg'),
+                        ),
                       ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'data',
+                            style: sheet.mediumSmi(Colors.black),
+                          ),
+                          Text(
+                            'Hi,baby',
+                            style: sheet.regularMedium(Colors.black),
+                          ),
+                        ],
+                      ),
+                      trailing: Text('4.30 PM'),
                     ),
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'data',
-                          style: sheet.mediumSmi(Colors.black),
-                        ),
-                        Text(
-                          'Hi,baby',
-                          style: sheet.regularMedium(Colors.black),
-                        ),
-                      ],
-                    ),
-                    trailing: Text('4.30 PM'),
-                  ),
-                  Container(
-                    alignment: Alignment.centerRight,
-                    width: 80.w,
-                    child: Divider(
-                      height: 1,
-                    ),
-                  )
-                ],
+                    Container(
+                      alignment: Alignment.centerRight,
+                      width: 80.w,
+                      child: Divider(
+                        height: 1,
+                      ),
+                    )
+                  ],
+                ),
+                onTap: () {
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (_) => Singelchat()));
+                },
               );
             }),
       );

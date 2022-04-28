@@ -64,7 +64,7 @@ class _BusniessChatsState extends State<BusniessChats> {
 
   void stopStream() async {
     await _recorder.stop();
-    await _audioStreamSubscription!.cancel();
+    await _audioStreamSubscription?.cancel();
     await _audioStream!.close();
   }
 
