@@ -289,4 +289,32 @@ class Style {
       );
 
   pads(h, v) => EdgeInsets.symmetric(horizontal: h, vertical: v);
+  loader(context) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return Container(
+            height: 100.h,
+            width: 100.w,
+            color: Colors.white,
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(
+                      width: 10.w,
+                    ),
+                    Text('Loading ...', style: sheet.mediumMedium(Colors.black))
+                  ],
+                )
+              ],
+            ),
+          );
+        });
+  }
 }

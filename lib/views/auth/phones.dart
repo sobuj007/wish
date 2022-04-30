@@ -51,6 +51,7 @@ class _PhonesState extends State<Phones> {
         print('object');
         print(verificationId);
         print(resendToken);
+        // Navigator.pop(context);
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -132,7 +133,7 @@ class _PhonesState extends State<Phones> {
               style: sheet.mediumMedium(Colors.white),
             )),
         onTap: () {
-          if (phoneNumber == null) {
+          if (phoneNumber.text.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Please Enter Valid Data'),
               backgroundColor: Colors.red,
@@ -140,6 +141,11 @@ class _PhonesState extends State<Phones> {
           } else {
             var pho = countrycode + phoneNumber.text.toString();
             print(pho);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Checking Phone Number ...'),
+              backgroundColor: Colors.green,
+            ));
+            // sheet.loader(context);
             loginWithPhone(pho);
           }
         },
