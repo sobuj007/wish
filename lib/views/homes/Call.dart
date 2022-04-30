@@ -1,3 +1,5 @@
+import 'package:Wish/views/contact_calls/selectperson.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:Wish/main.dart';
@@ -10,6 +12,12 @@ class Call extends StatefulWidget {
 }
 
 class _CallState extends State<Call> {
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +71,10 @@ class _CallState extends State<Call> {
         ],
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+              context, CupertinoPageRoute(builder: (_) => SelectPersonCall()));
+        },
         child: Icon(Icons.call),
       ),
     );

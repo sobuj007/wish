@@ -55,16 +55,17 @@ class _SplashState extends State<Splash> {
             SizedBox(
               height: 3.h,
             ),
-            Container(
-              width: 100.w,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  color: col.primary, borderRadius: BorderRadius.circular(25)),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                      context, CupertinoPageRoute(builder: (_) => Phones()));
-                },
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                    context, CupertinoPageRoute(builder: (_) => Phones()));
+              },
+              child: Container(
+                width: 100.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    color: col.primary,
+                    borderRadius: BorderRadius.circular(25)),
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Text(

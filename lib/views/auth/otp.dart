@@ -109,16 +109,17 @@ class _OtpVerificationState extends State<OtpVerification> {
                   ),
                 ),
               ),
-              Container(
-                width: 100.w,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: col.primary,
-                    borderRadius: BorderRadius.circular(25)),
-                child: GestureDetector(
-                  onTap: () async {
-                    verifyOTP();
-                  },
+              GestureDetector(
+                onTap: () async {
+                  sheet.loader(context);
+                  verifyOTP();
+                },
+                child: Container(
+                  width: 100.w,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: col.primary,
+                      borderRadius: BorderRadius.circular(25)),
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Text(
@@ -163,7 +164,11 @@ class _OtpVerificationState extends State<OtpVerification> {
     //await auth.signInWithCredential(credential).then((value) => {print(value)});
     await auth.signInWithCredential(credential).then((result) {
       print(result);
-
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Welcome ...'),
+        backgroundColor: Colors.green,
+      ));
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => MainLayouts()));
     }).catchError((e) {

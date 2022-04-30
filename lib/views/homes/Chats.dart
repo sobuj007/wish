@@ -1,7 +1,11 @@
 import 'package:Wish/views/homes/Singelchat.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:Wish/main.dart';
+
+import '../chatscontact/selectperson.dart';
 
 class Chats extends StatefulWidget {
   Chats({Key? key}) : super(key: key);
@@ -56,7 +60,10 @@ class _ChatsState extends State<Chats> {
         ],
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => SelectPersonMessanger()));
+        },
         child: Icon(Icons.message),
       ),
     );
