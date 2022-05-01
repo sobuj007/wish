@@ -1,5 +1,8 @@
 import 'package:Wish/main.dart';
+import 'package:Wish/views/chatroom/chatroom.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +11,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 class SelectPersonMessanger extends StatefulWidget {
-  SelectPersonMessanger({Key? key}) : super(key: key);
+  final user;
+  SelectPersonMessanger({Key? key, this.user}) : super(key: key);
 
   @override
   State<SelectPersonMessanger> createState() => _SelectPersonMessangerState();
@@ -16,10 +20,12 @@ class SelectPersonMessanger extends StatefulWidget {
 
 class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
   List<Contact> contacts = [];
+  late User u;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    u = widget.user;
     getpers();
   }
 
@@ -134,6 +140,14 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
                                         radius: 40,
                                         child: Text(c.initials()),
                                       ),
+                                onTap: () {
+                                  var d =
+                                      c.phones!.elementAt(0).value.toString() +
+                                          '#' +
+                                          u.phoneNumber.toString();
+                                  print("object" + d.toString());
+                                  addtoChatroom(d);
+                                },
                               ),
                               Container(
                                 width: 80.w,
@@ -150,5 +164,17 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
             ],
           ),
         ));
+  }
+
+  addtoChatroom(d) async {
+    var ud = u.uid.toString();
+    await FirebaseFirestore.instance
+        .collection('chatroom')
+        .doc(ud.toString())
+        .collection(d)
+        .add({});
+
+    print('success');
+    Navigator.push(context, MaterialPageRoute(builder: (_) => Chatroom()));
   }
 }

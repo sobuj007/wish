@@ -15,9 +15,15 @@ class MainLayouts extends StatefulWidget {
 
 class _MainLayoutsState extends State<MainLayouts> {
   int selectindex = 0;
-  List<Widget> wd = [Chats(), BusniessChats(), Call()];
+  List<Widget> wd = [];
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    wd = [Chats(user: widget.user), BusniessChats(), Call()];
     return Scaffold(
         body: SafeArea(child: wd[selectindex]),
         bottomNavigationBar: BottomNavBar(

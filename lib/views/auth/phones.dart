@@ -51,7 +51,7 @@ class _PhonesState extends State<Phones> {
         print('object');
         print(verificationId);
         print(resendToken);
-        // Navigator.pop(context);
+        Navigator.pop(context);
         Navigator.push(
             context,
             MaterialPageRoute(

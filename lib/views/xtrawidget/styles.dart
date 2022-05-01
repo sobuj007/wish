@@ -14,7 +14,7 @@ class Style {
   double fsbold = 22.sp;
   String ff = 'SourceSansPro';
   // Map<dynamic, dynamic>? cart;
-  // dynamic category;
+  dynamic contacts = [];
   // String? fcmtoken;
   // String? duebil;
   // String? ammount;

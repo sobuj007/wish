@@ -1,10 +1,12 @@
 import 'package:Wish/views/auth/phones.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:Wish/views/mainlayouts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../main.dart';
 
@@ -21,7 +23,7 @@ class _OtpVerificationState extends State<OtpVerification> {
   String otp = '';
   late String verificationCode;
   FirebaseAuth auth = FirebaseAuth.instance;
-
+  var userdata;
   String verificationID = "";
   @override
   void initState() {
@@ -129,25 +131,25 @@ class _OtpVerificationState extends State<OtpVerification> {
                   ),
                 ),
               ),
-              Container(
-                height: 10.h,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      "Don't you recive any Code ?",
-                      style: sheet.regularBold(Colors.black87),
-                    ),
-                    GestureDetector(
-                      child: Text(
-                        "Resend New Code",
-                        style: sheet.mediumBold(Colors.black54),
-                      ),
-                      onTap: () {},
-                    )
-                  ],
-                ),
-              )
+              // Container(
+              //   height: 10.h,
+              //   child: Column(
+              //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //     children: [
+              //       Text(
+              //         "Don't you recive any Code ?",
+              //         style: sheet.regularBold(Colors.black87),
+              //       ),
+              //       GestureDetector(
+              //         child: Text(
+              //           "Resend New Code",
+              //           style: sheet.mediumBold(Colors.black54),
+              //         ),
+              //         onTap: () {},
+              //       )
+              //     ],
+              //   ),
+              // )
             ],
           ),
         ),
@@ -163,16 +165,69 @@ class _OtpVerificationState extends State<OtpVerification> {
 
     //await auth.signInWithCredential(credential).then((value) => {print(value)});
     await auth.signInWithCredential(credential).then((result) {
-      print(result);
+      // print(result.additionalUserInfo!.isNewUser.toString());
+      // print(result.user!.uid.toString());
+      // print(result.user!.phoneNumber.toString());
+
+      var uid = result.user!.uid.toString();
+      var name = result.user!.displayName.toString();
+      var phone = result.user!.phoneNumber.toString();
+      userdata = result.user;
+      print(userdata);
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Welcome ...'),
-        backgroundColor: Colors.green,
-      ));
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => MainLayouts()));
+
+      if (result.additionalUserInfo!.isNewUser == true) {
+        addnewuser(uid, phone, name);
+      } else {
+        checkuser(uid);
+      }
     }).catchError((e) {
       print(e);
     });
+  }
+
+  addnewuser(uid, p, n) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'username': n.toString(),
+      'phone': p.toString(),
+      'uid': uid.toString(),
+      'image': uid.toString(),
+    });
+    print('user creation success');
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Welcome ...'),
+      backgroundColor: Colors.green,
+    ));
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MainLayouts(
+                  user: userdata,
+                )));
+  }
+
+  bool? exist = false;
+  checkuser(uid) async {
+    try {
+      await FirebaseFirestore.instance.doc('users/$uid').get().then((doc) {
+        exist = doc.exists;
+        print(exist);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Welcome ...'),
+          backgroundColor: Colors.green,
+        ));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MainLayouts(
+                      user: userdata,
+                    )));
+      });
+      //return exist;
+    } catch (e) {
+      print(e);
+      //return false;
+    }
   }
 }
