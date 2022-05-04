@@ -12,13 +12,16 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 
 class SelectPersonMessanger extends StatefulWidget {
   final user;
-  SelectPersonMessanger({Key? key, this.user}) : super(key: key);
+  final sender;
+  SelectPersonMessanger({Key? key, this.user, required this.sender})
+      : super(key: key);
 
   @override
   State<SelectPersonMessanger> createState() => _SelectPersonMessangerState();
 }
 
 class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
+  ScrollController sc = new ScrollController(initialScrollOffset: 5.0);
   List<Contact> contacts = [];
   late User u;
   @override
@@ -118,6 +121,7 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
                   : Container(
                       height: 85.h,
                       child: ListView.builder(
+                        controller: sc,
                         itemCount: contacts.length,
                         itemBuilder: (BuildContext context, int index) {
                           Contact c = contacts[index];
@@ -146,7 +150,11 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
                                           '#' +
                                           u.phoneNumber.toString();
                                   print("object" + d.toString());
-                                  addtoChatroom(d);
+                                  var receiver = c.displayName.toString();
+                                  var rphone =
+                                      c.phones!.elementAt(0).value.toString();
+
+                                  addtoChatroom(d, receiver, rphone);
                                 },
                               ),
                               Container(
@@ -166,15 +174,45 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
         ));
   }
 
-  addtoChatroom(d) async {
+  addtoChatroom(d, receiver, rphone) async {
     var ud = u.uid.toString();
     await FirebaseFirestore.instance
         .collection('chatroom')
-        .doc(ud.toString())
-        .collection(d)
+        .doc(d.toString())
+        .collection('chat')
         .add({});
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(ud.toString())
+        .collection('chatroom')
+        .add({'room': d.toString(), 'receiver': receiver});
+    await FirebaseFirestore.instance
+        .collection('roominfo')
+        .doc(u.phoneNumber)
+        .collection('room')
+        .add({
+      'roomid': d.toString(),
+      'user1': rphone,
+      'rname': receiver,
+      'user2': u.phoneNumber,
+      'uname': u.displayName
+    });
+    await FirebaseFirestore.instance
+        .collection('roominfo')
+        .doc(rphone)
+        .collection('room')
+        .add({'roomid': d.toString(), 'user1': rphone, 'user2': u.phoneNumber});
 
     print('success');
-    Navigator.push(context, MaterialPageRoute(builder: (_) => Chatroom()));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => Chatroom(
+                  roomid: d,
+                  receivername: receiver,
+                  receiverphone: rphone,
+                  senderphone: u.phoneNumber,
+                  sender: widget.sender,
+                )));
   }
 }

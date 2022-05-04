@@ -1,3 +1,4 @@
+import 'package:Wish/views/chatroom/chatroom.dart';
 import 'package:Wish/views/chatscontact/selectperson.dart';
 import 'package:Wish/views/homes/Singelchat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -21,12 +22,18 @@ class Chats extends StatefulWidget {
 class _ChatsState extends State<Chats> {
   late User u;
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  var room = [];
+  var name = [];
+  //var room = [];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     u = widget.user;
-    print(u.phoneNumber);
+    // print(u.phoneNumber);
+    //getData();
+
+    getDocs();
   }
 
   @override
@@ -78,66 +85,114 @@ class _ChatsState extends State<Chats> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => SelectPersonMessanger(user: u)));
+                  builder: (_) => SelectPersonMessanger(
+                        user: u,
+                        sender: va['sender'],
+                      )));
         },
         child: Icon(Icons.message),
       ),
     );
   }
 
+  var va;
+  Future getDocs() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection("roominfo")
+        .doc(u.phoneNumber)
+        .collection('room')
+        .get();
+    for (int i = 0; i < querySnapshot.docs.length; i++) {
+      var a = querySnapshot.docs[i].data() as Map;
+      // print(a['room']);
+      room.add(a['roomid']);
+      name.add(a['receiver']);
+    }
+    var v = await firebaseFirestore
+        .collection('users')
+        .doc(u.uid)
+        .collection('userinfo')
+        .get();
+    va = v.docs[0].data() as Map;
+
+    setState(() {
+      // print(va['name'].toString());
+      // print(room.toString());
+    });
+  }
+
+  // Future<void> getData() async {
+  //   final CollectionReference v =
+  //       FirebaseFirestore.instance.collection('users');
+  //   v.get().then((QuerySnapshot snapshot) {
+  //     snapshot.docs.forEach((DocumentSnapshot doc) {
+  //       print(doc.id);
+  //       print(doc.exists);
+  //     });
+  //   });
+  // }
+
   chatsitem() {
     var uids = u.uid.toString();
-    return Container(
-      height: 80.h,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: firebaseFirestore.collection('users').snapshots(),
-        // initialData: initialData,
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          return Container(
-            child: ListView.builder(
-                itemCount: snapshot.data?.docs.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Map<String, dynamic> map =
-                      snapshot.data?.docs[index].data() as Map<String, dynamic>;
-                  return GestureDetector(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          contentPadding: sheet.pads(3.w, 2.h),
-                          leading: CircleAvatar(
-                            backgroundColor: col.primary,
-                            radius: 40,
-                            child: CircleAvatar(
-                              radius: 35,
-                              backgroundImage: NetworkImage(
-                                  'https://thumbs.dreamstime.com/b/person-gray-photo-placeholder-man-shirt-white-background-person-gray-photo-placeholder-man-132818487.jpg'),
-                            ),
-                          ),
-                          title: Text(
-                            map['username'].toString(),
-                            style: sheet.mediumSmi(Colors.black),
-                          ),
-                          subtitle: Text(
-                            map['phone'].toString(),
-                            style: sheet.regularMedium(Colors.black),
-                          ),
-                          trailing: Text('4.30 PM'),
-                        ),
-                        Container(
-                          alignment: Alignment.centerRight,
-                          width: 80.w,
-                          child: Divider(
-                            height: 1,
-                          ),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => Singelchat()));
-                    },
-                  );
-                }),
+    return Expanded(
+      child: ListView.builder(
+        itemCount: room.length,
+        itemBuilder: (BuildContext context, int i) {
+          var d = room[i].toString();
+          var n = name[i].toString();
+          //  print('hello' + d.toString());
+          Future.delayed(Duration(seconds: 2)).then((value) {});
+          return Card(
+            child: Container(
+              height: 10.h,
+              color: Colors.grey.shade100,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: firebaseFirestore
+                    .collection('chatroom')
+                    .doc(d)
+                    .collection('chat')
+                    .orderBy(
+                      'time',
+                    )
+                    .snapshots(),
+                // initialData: initialData,
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.data == null) {
+                    return Container(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    Map<String, dynamic> map =
+                        snapshot.data?.docs[0].data() as Map<String, dynamic>;
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.blue,
+                        radius: 35,
+                      ),
+                      title: Text(map['receiver'].toString()),
+                      subtitle: Text(
+                        map['message'].toString(),
+                        style: sheet.regularMedium(Colors.black),
+                      ),
+                      onTap: () {
+                        print('object' + map['receiver'].toString());
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => Chatroom(
+                                    roomid: d,
+                                    receivername: n,
+                                    receiverphone: map['rphone'],
+                                    senderphone: u.phoneNumber,
+                                    sender: '')));
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
           );
         },
       ),

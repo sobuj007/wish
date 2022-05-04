@@ -1,3 +1,4 @@
+import 'package:Wish/views/auth/changeprofile.dart';
 import 'package:Wish/views/auth/phones.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -177,6 +178,16 @@ class _OtpVerificationState extends State<OtpVerification> {
       Navigator.pop(context);
 
       if (result.additionalUserInfo!.isNewUser == true) {
+        // if (name.isEmpty) {
+        //   Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //           builder: (_) => ChangeProfiles(
+        //                 u: userdata,
+        //               )));
+        // } else {
+        //   addnewuser(uid, phone, name);
+        // }
         addnewuser(uid, phone, name);
       } else {
         checkuser(uid);
@@ -187,11 +198,15 @@ class _OtpVerificationState extends State<OtpVerification> {
   }
 
   addnewuser(uid, p, n) async {
-    await FirebaseFirestore.instance.collection('users').doc(uid).set({
-      'username': n.toString(),
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('userinfo')
+        .add({
+      'username': '',
       'phone': p.toString(),
       'uid': uid.toString(),
-      'image': uid.toString(),
+      'image': '',
     });
     print('user creation success');
 
@@ -213,6 +228,7 @@ class _OtpVerificationState extends State<OtpVerification> {
       await FirebaseFirestore.instance.doc('users/$uid').get().then((doc) {
         exist = doc.exists;
         print(exist);
+
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Welcome ...'),
           backgroundColor: Colors.green,
