@@ -162,35 +162,62 @@ class _OtpVerificationState extends State<OtpVerification> {
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationID, smsCode: otp.toString());
     print(credential);
-    print('Problem');
 
     //await auth.signInWithCredential(credential).then((value) => {print(value)});
-    await auth.signInWithCredential(credential).then((result) {
-      // print(result.additionalUserInfo!.isNewUser.toString());
-      // print(result.user!.uid.toString());
-      // print(result.user!.phoneNumber.toString());
-
+    await auth.signInWithCredential(credential).then((result) async {
       var uid = result.user!.uid.toString();
       var name = result.user!.displayName.toString();
       var phone = result.user!.phoneNumber.toString();
       userdata = result.user;
-      print(userdata);
+      //print(userdata);
       Navigator.pop(context);
-
+      var d;
       if (result.additionalUserInfo!.isNewUser == true) {
-        // if (name.isEmpty) {
-        //   Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //           builder: (_) => ChangeProfiles(
-        //                 u: userdata,
-        //               )));
-        // } else {
-        //   addnewuser(uid, phone, name);
-        // }
-        addnewuser(uid, phone, name);
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(uid)
+            .collection('userinfo')
+            .get();
+        for (int i = 0; i < querySnapshot.docs.length; i++) {
+          var a = querySnapshot.docs[i].data() as Map;
+          // print(a['room']);
+          d = a['username'];
+          print(d);
+        }
+        if (d.isEmpty) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => ChangeProfiles(
+                        u: userdata,
+                      )));
+        } else {
+          addnewuser(uid, phone, name);
+        }
+        //addnewuser(uid, phone, name);
       } else {
-        checkuser(uid);
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection("users")
+            .doc(uid)
+            .collection('userinfo')
+            .get();
+        for (int i = 0; i < querySnapshot.docs.length; i++) {
+          var a = querySnapshot.docs[i].data() as Map;
+          // print(a['room']);
+          d = a['username'];
+          print('halaww' + d);
+        }
+        if (d.isEmpty) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => ChangeProfiles(
+                        u: userdata,
+                      )));
+        } else {
+          checkuser(uid);
+        }
+        // checkuser(uid);
       }
     }).catchError((e) {
       print(e);
