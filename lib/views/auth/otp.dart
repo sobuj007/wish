@@ -1,3 +1,4 @@
+import 'package:Wish/Sharedpref/SharedPrefManager.dart';
 import 'package:Wish/views/auth/changeprofile.dart';
 import 'package:Wish/views/auth/phones.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -158,6 +159,8 @@ class _OtpVerificationState extends State<OtpVerification> {
     );
   }
 
+  var phone;
+  var name;
   verifyOTP() async {
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationID, smsCode: otp.toString());
@@ -166,25 +169,14 @@ class _OtpVerificationState extends State<OtpVerification> {
     //await auth.signInWithCredential(credential).then((value) => {print(value)});
     await auth.signInWithCredential(credential).then((result) async {
       var uid = result.user!.uid.toString();
-      var name = result.user!.displayName.toString();
-      var phone = result.user!.phoneNumber.toString();
+      name = result.user!.displayName.toString();
+      phone = result.user!.phoneNumber.toString();
       userdata = result.user;
-      //print(userdata);
+      print(userdata);
       Navigator.pop(context);
       var d;
       if (result.additionalUserInfo!.isNewUser == true) {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("users")
-            .doc(uid)
-            .collection('userinfo')
-            .get();
-        for (int i = 0; i < querySnapshot.docs.length; i++) {
-          var a = querySnapshot.docs[i].data() as Map;
-          // print(a['room']);
-          d = a['username'];
-          print(d);
-        }
-        if (d.isEmpty) {
+        if (result.user!.displayName.toString() == null) {
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -192,70 +184,59 @@ class _OtpVerificationState extends State<OtpVerification> {
                         u: userdata,
                       )));
         } else {
-          addnewuser(uid, phone, name);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => ChangeProfiles(
+                        u: userdata,
+                      )));
         }
-        //addnewuser(uid, phone, name);
       } else {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection("users")
-            .doc(uid)
-            .collection('userinfo')
-            .get();
-        for (int i = 0; i < querySnapshot.docs.length; i++) {
-          var a = querySnapshot.docs[i].data() as Map;
-          // print(a['room']);
-          d = a['username'];
-          print('halaww' + d);
-        }
-        if (d.isEmpty) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => ChangeProfiles(
-                        u: userdata,
-                      )));
-        } else {
-          checkuser(uid);
-        }
-        // checkuser(uid);
+        checkuser(uid);
       }
     }).catchError((e) {
       print(e);
     });
   }
 
-  addnewuser(uid, p, n) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('userinfo')
-        .add({
-      'username': '',
-      'phone': p.toString(),
-      'uid': uid.toString(),
-      'image': '',
-    });
-    print('user creation success');
+  // addnewuser(uid, p, n) async {
+  //   await FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(uid)
+  //       .collection('userinfo')
+  //       .add({
+  //     'username': '',
+  //     'phone': p.toString(),
+  //     'uid': uid.toString(),
+  //     'image': '',
+  //   });
+  //   print('user creation success');
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Welcome ...'),
-      backgroundColor: Colors.green,
-    ));
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MainLayouts(
-                  user: userdata,
-                )));
-  }
+  //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //     content: Text('Welcome ...'),
+  //     backgroundColor: Colors.green,
+  //   ));
+  //   Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) => MainLayouts(
+  //                 user: userdata,
+  //               )));
+  // }
 
   bool? exist = false;
   checkuser(uid) async {
     try {
-      await FirebaseFirestore.instance.doc('users/$uid').get().then((doc) {
+      await FirebaseFirestore.instance
+          .doc('users/$uid')
+          .get()
+          .then((doc) async {
         exist = doc.exists;
         print(exist);
-
+        await SharedPrefManager.setToken(uid);
+        await SharedPrefManager.setUserLogin(true);
+        await SharedPrefManager.setphone(phone);
+        await SharedPrefManager.setphone(name);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Welcome ...'),
           backgroundColor: Colors.green,

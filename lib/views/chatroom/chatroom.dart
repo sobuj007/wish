@@ -4,6 +4,8 @@ import 'package:dialogflow_grpc/generated/google/protobuf/timestamp.pbjson.dart'
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../Sharedpref/SharedPrefManager.dart';
+
 class Chatroom extends StatefulWidget {
   final roomid;
   final receivername;
@@ -28,10 +30,31 @@ class _ChatroomState extends State<Chatroom> {
   TextEditingController _inputs = new TextEditingController();
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getuserdatas();
+  }
+
+  var phonenumbers;
+  var names;
+  var uid;
+  getuserdatas() async {
+    uid = await SharedPrefManager.getToken();
+    phonenumbers = await SharedPrefManager.getphone();
+    names = await SharedPrefManager.getusername();
+    print(names);
+    print(phonenumbers);
+    print(uid);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receivername),
+        title: Text((widget.receiverphone == phonenumbers)
+            ? widget.receivername
+            : widget.sender),
       ),
       body: SafeArea(
           child: Container(
@@ -47,52 +70,67 @@ class _ChatroomState extends State<Chatroom> {
             if (snapshot.data == null) {
               return Center(child: CircularProgressIndicator());
             } else {
-              return ListView.builder(
-                itemCount: snapshot.data!.docs.length,
-                itemBuilder: (context, index) {
-                  Map<String, dynamic> map =
-                      snapshot.data!.docs[index].data() as Map<String, dynamic>;
-                  if (map['rphone'].toString() != widget.receiverphone) {
-                    return Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(right: 35.w),
-                        color: Colors.grey.shade100,
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(map['message']),
+              return Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        image: AssetImage('assets/patts.jpg'),
+                        opacity: .3,
+                        fit: BoxFit.cover)),
+                child: ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    Map<String, dynamic> map = snapshot.data!.docs[index].data()
+                        as Map<String, dynamic>;
+                    if (map['sphone'].toString() == phonenumbers) {
+                      return Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(left: 35.w),
+                          alignment: Alignment.centerRight,
+                          child: Card(
+                            color: Color.fromARGB(79, 240, 241, 241),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                map['message'],
+                                style: sheet.mediumBold(Colors.black),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  } else {
-                    return Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(left: 35.w),
-                        alignment: Alignment.centerRight,
-                        // color: Colors.grey.shade100,
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(map['message']),
+                      );
+                    } else {
+                      return Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(right: 35.w),
+                          alignment: Alignment.centerLeft,
+                          // color: Colors.grey.shade100,
+                          child: Card(
+                            color: Colors.white54,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(map['message'],
+                                  style: sheet.mediumBold(Colors.black)),
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-                },
+                      );
+                    }
+                  },
+                ),
               );
             }
           },
         ),
       )),
       floatingActionButton: Container(
+        height: 8.h,
+        color: Colors.transparent,
         width: 90.w,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-              width: 70.w,
+              width: 65.w,
               child: TextField(
                   controller: _inputs,
                   decoration: InputDecoration(
@@ -104,7 +142,7 @@ class _ChatroomState extends State<Chatroom> {
                               BorderSide(width: 1, color: Colors.black)))),
             ),
             Container(
-              width: 20.w,
+              width: 25.w,
               padding: EdgeInsets.symmetric(horizontal: 1.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,9 +153,12 @@ class _ChatroomState extends State<Chatroom> {
                   ),
                   SizedBox(),
                   GestureDetector(
-                    child: Icon(
-                      Icons.send,
-                      size: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Icon(
+                        Icons.send,
+                        size: 30,
+                      ),
                     ),
                     onTap: () {
                       sendmessage();
@@ -154,10 +195,10 @@ class _ChatroomState extends State<Chatroom> {
         .collection('chat')
         .add({
       'message': _inputs.text.toString(),
-      'sender': widget.sender,
+      'sender': names.toString(),
       'receiver': widget.receivername,
       'rphone': widget.receiverphone,
-      'sphone': widget.senderphone,
+      'sphone': phonenumbers,
       'attachment': '',
       'time': Timestamp.now(),
     });

@@ -10,11 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../Sharedpref/SharedPrefManager.dart';
+
 class SelectPersonMessanger extends StatefulWidget {
-  final user;
   final sender;
-  SelectPersonMessanger({Key? key, this.user, required this.sender})
-      : super(key: key);
+  SelectPersonMessanger({Key? key, required this.sender}) : super(key: key);
 
   @override
   State<SelectPersonMessanger> createState() => _SelectPersonMessangerState();
@@ -23,19 +23,34 @@ class SelectPersonMessanger extends StatefulWidget {
 class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
   ScrollController sc = new ScrollController(initialScrollOffset: 5.0);
   List<Contact> contacts = [];
-  late User u;
+
+  bool searchs = false;
+  late List? unfilddata = [Null];
+  late List? data = [Null];
+  late List? phonedata = [Null];
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    u = widget.user;
+    //u = widget.user;
     getpers();
+    getuserdatas();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  var phonenumbers;
+  var names;
+  var uid;
+  getuserdatas() async {
+    uid = await SharedPrefManager.getToken();
+    phonenumbers = await SharedPrefManager.getphone();
+    print("phone" + phonenumbers);
   }
 
   getpers() async {
@@ -58,6 +73,42 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
       //           )
       //         ],
       //       ));
+    }
+  }
+
+  searchdemo(value) {
+    print('valuses' + value.toString());
+    var strisEiext = value.length > 0 ? true : false;
+    if (strisEiext) {
+      var filterdata = [];
+      var filterphonedata = [];
+      for (var i = 0; i < unfilddata!.length; i++) {
+        String name = unfilddata![i].displayName.toString().toUpperCase();
+        String phone = unfilddata![i].phones.toString().toUpperCase();
+        print(name);
+        if (name.contains(value.toString().toUpperCase()) ||
+            phone.contains(value.toString().toUpperCase())) {
+          print("object");
+          filterdata.add(unfilddata![i].displayName);
+          filterphonedata
+              .add(unfilddata![i].phones!.elementAt(0).value.toString());
+        }
+      }
+      setState(() {
+        data = filterdata;
+        phonedata = filterphonedata;
+        print(data);
+        print("phonedata");
+        print(phonedata);
+        searchs = true;
+      });
+    } else {
+      setState(() {
+        data = unfilddata;
+        phonedata = unfilddata;
+        print(data);
+        searchs = false;
+      });
     }
   }
 
@@ -85,6 +136,7 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
       setState(() {
         contacts = contact;
         print("Contact List " + contact.toList().toString());
+        unfilddata = contact;
       });
     } else {
       print("Contact List: Permission denied ");
@@ -96,6 +148,7 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
     }
   }
 
+  TextEditingController textin = new TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,78 +157,164 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
           child: Column(
             children: [
               (contacts.isEmpty)
-                  ? Expanded(
-                      child: Row(
+                  ? Container()
+                  : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(
-                          width: 10.w,
-                        ),
-                        Text(
-                          'Loading . . .',
-                          style: sheet.mediumBold(Colors.black),
-                        )
-                      ],
-                    ))
-                  : Container(
-                      height: 85.h,
-                      child: ListView.builder(
-                        controller: sc,
-                        itemCount: contacts.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          Contact c = contacts[index];
-                          return Column(
-                            children: [
-                              ListTile(
-                                title: Text(
-                                  c.displayName.toString(),
-                                  style: sheet.mediumBold(Colors.black),
-                                ),
-                                subtitle: Text(
-                                    c.phones!.elementAt(0).value.toString()),
-                                leading: (c.avatar! != null &&
-                                        c.avatar!.length > 0)
-                                    ? CircleAvatar(
-                                        radius: 40,
-                                        backgroundImage: MemoryImage(c.avatar!),
-                                      )
-                                    : CircleAvatar(
-                                        radius: 40,
-                                        child: Text(c.initials()),
-                                      ),
-                                onTap: () {
-                                  var d =
-                                      c.phones!.elementAt(0).value.toString() +
-                                          '#' +
-                                          u.phoneNumber.toString();
-                                  print("object" + d.toString());
-                                  var receiver = c.displayName.toString();
-                                  var rphone =
-                                      c.phones!.elementAt(0).value.toString();
-
-                                  addtoChatroom(d, receiver, rphone);
-                                },
+                        Container(
+                            width: 90.w,
+                            margin: sheet.pads(3.w, 2.h),
+                            child: TextField(
+                              controller: textin,
+                              autofocus: false,
+                              onChanged: (value) {
+                                searchdemo(value);
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: sheet.pads(5.0.w, 0.10.h),
+                                hintText: "search contact",
+                                suffixIcon: Icon(Icons.search),
+                                hintStyle: sheet.regularBold(Colors.black),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: Colors.black, width: 1)),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: Colors.black, width: 1)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(
+                                        color: Colors.black, width: 1)),
                               ),
-                              Container(
-                                width: 80.w,
-                                child: Divider(
-                                  height: 1,
-                                  color: Color.fromARGB(144, 158, 158, 158),
-                                ),
-                              )
-                            ],
-                          );
-                        },
-                      ),
+                            )),
+                      ],
                     ),
+              searchs
+                  ? (data != null)
+                      ? Container(
+                          height: 35.h,
+                          margin: sheet.pads(2.w, 5.0.w),
+                          child: ListView.builder(
+                              itemCount: data!.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return ListTile(
+                                  leading: Container(
+                                    width: 10.w,
+                                    height: 12.w,
+                                    decoration: BoxDecoration(
+                                        // image: DecorationImage(
+                                        //     image: AssetImage(
+                                        //         'assets/' + pimg[index]),
+                                        //     fit: BoxFit.cover),
+                                        ),
+                                  ),
+                                  title: Text(data![index].toString()),
+                                  subtitle: Text(phonedata![index].toString()),
+                                  onTap: () {
+                                    var pd = phonedata![index]
+                                        .toString()
+                                        .replaceAll(' ', '')
+                                        .replaceAll('-', '');
+                                    var d = pd.toString() +
+                                        '#' +
+                                        phonenumbers.toString();
+                                    print("object" + d.toString());
+                                    var receiver = data![index].toString();
+                                    var rphone = phonedata![index].toString();
+
+                                    addtoChatroom(d, receiver, rphone);
+                                  },
+                                );
+                              }),
+                        )
+                      : Center(
+                          child: Text(
+                            "Nothing Found",
+                            style: sheet.regularBold(Colors.black),
+                          ),
+                        )
+                  : (contacts.isEmpty)
+                      ? Expanded(
+                          child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(
+                              width: 10.w,
+                            ),
+                            Text(
+                              'Loading . . .',
+                              style: sheet.mediumBold(Colors.black),
+                            )
+                          ],
+                        ))
+                      : Expanded(
+                          //height: 85.h,
+                          child: ListView.builder(
+                            controller: sc,
+                            itemCount: contacts.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              Contact c = contacts[index];
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    title: Text(
+                                      c.displayName.toString(),
+                                      style: sheet.mediumBold(Colors.black),
+                                    ),
+                                    subtitle: Text(c.phones!
+                                        .elementAt(0)
+                                        .value
+                                        .toString()),
+                                    leading: (c.avatar! != null &&
+                                            c.avatar!.length > 0)
+                                        ? CircleAvatar(
+                                            radius: 40,
+                                            backgroundImage:
+                                                MemoryImage(c.avatar!),
+                                          )
+                                        : CircleAvatar(
+                                            radius: 40,
+                                            child: Text(c.initials()),
+                                          ),
+                                    onTap: () {
+                                      var d = c.phones!
+                                              .elementAt(0)
+                                              .value
+                                              .toString() +
+                                          '#' +
+                                          phonenumbers.toString();
+                                      print("object" + d.toString());
+                                      var receiver = c.displayName.toString();
+                                      var rphone = c.phones!
+                                          .elementAt(0)
+                                          .value
+                                          .toString();
+
+                                      addtoChatroom(d, receiver, rphone);
+                                    },
+                                  ),
+                                  Container(
+                                    width: 80.w,
+                                    child: Divider(
+                                      height: 1,
+                                      color: Color.fromARGB(144, 158, 158, 158),
+                                    ),
+                                  )
+                                ],
+                              );
+                            },
+                          ),
+                        ),
             ],
           ),
         ));
   }
 
   addtoChatroom(d, receiver, rphone) async {
-    var ud = u.uid.toString();
+    var ud = uid.toString();
     await FirebaseFirestore.instance
         .collection('chatroom')
         .doc(d.toString())
@@ -188,31 +327,32 @@ class _SelectPersonMessangerState extends State<SelectPersonMessanger> {
         .add({'room': d.toString(), 'receiver': receiver});
     await FirebaseFirestore.instance
         .collection('roominfo')
-        .doc(u.phoneNumber)
+        .doc(phonenumbers)
         .collection('room')
         .add({
       'roomid': d.toString(),
       'user1': rphone,
       'rname': receiver,
-      'user2': u.phoneNumber,
-      'uname': u.displayName
+      'user2': phonenumbers,
+      'uname': widget.sender
     });
     await FirebaseFirestore.instance
         .collection('roominfo')
         .doc(rphone)
         .collection('room')
-        .add({'roomid': d.toString(), 'user1': rphone, 'user2': u.phoneNumber});
+        .add({'roomid': d.toString(), 'user1': rphone, 'user2': phonenumbers});
 
     print('success');
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) => Chatroom(
-                  roomid: d,
-                  receivername: receiver,
-                  receiverphone: rphone,
-                  senderphone: u.phoneNumber,
-                  sender: widget.sender,
-                )));
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (_) => Chatroom(
+                roomid: d,
+                receivername: receiver,
+                receiverphone: rphone,
+                senderphone: phonenumbers,
+                sender: widget.sender,
+              )),
+    );
   }
 }

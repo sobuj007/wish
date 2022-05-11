@@ -43,4 +43,26 @@ class SharedPrefManager {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString("fcmtokens");
   }
+
+  static Future<dynamic> setphone(token) async {
+    String data = token.toString();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString("phone", data);
+  }
+
+  static Future<dynamic> getphone() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("phone");
+  }
+
+  static Future<dynamic> setusername(token) async {
+    String data = token.toString();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString("name", data);
+  }
+
+  static Future<dynamic> getusername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("name");
+  }
 }

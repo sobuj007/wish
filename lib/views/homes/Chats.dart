@@ -1,10 +1,16 @@
+import 'package:Wish/Sharedpref/SharedPrefManager.dart';
+import 'package:Wish/views/auth/phones.dart';
 import 'package:Wish/views/chatroom/chatroom.dart';
 import 'package:Wish/views/chatscontact/selectperson.dart';
 import 'package:Wish/views/homes/Singelchat.dart';
+//import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_image/firebase_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:Wish/main.dart';
@@ -20,65 +26,126 @@ class Chats extends StatefulWidget {
 }
 
 class _ChatsState extends State<Chats> {
-  late User u;
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   var room = [];
   var name = [];
-  //var room = [];
+  var phone;
+  var names;
+  var uid;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    u = widget.user;
-    // print(u.phoneNumber);
-    //getData();
+    getuserdatas();
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  getuserdatas() async {
+    uid = await SharedPrefManager.getToken();
+    phone = await SharedPrefManager.getphone();
+
+    DocumentSnapshot variable = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('userinfo')
+        .doc(phone)
+        .get();
+    names = variable['username'].toString();
+    await SharedPrefManager.setusername(names);
+
+    print(variable['username'].toString());
     getDocs();
+    loadImage();
+  }
+
+  dynamic profileimage;
+  loadImage() async {
+    //current user id
+
+    try {
+      //collect the image name\
+      DocumentSnapshot variable = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('userinfo')
+          .doc(phone)
+          .get();
+      //  print('bal' + variable.toString());
+
+      profileimage = variable['image'].toString();
+
+      print("this is " + profileimage.toString());
+      setState(() {});
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  var va;
+  Future getDocs() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection("roominfo")
+        .doc(phone)
+        .collection('room')
+        .get();
+    for (int i = 0; i < querySnapshot.docs.length; i++) {
+      var a = querySnapshot.docs[i].data() as Map;
+      print('amarroom' + a['room'].toString());
+      room.add(a['roomid']);
+      name.add(a['receiver']);
+    }
+    var v = await firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .collection('userinfo')
+        .get();
+    va = v.docs[0].data() as Map;
+    // print('what' + va);
+
+    setState(() {
+      // print(va['name'].toString());
+      // print(room.toString());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        // leading: PhotoView(
+        //   imageProvider: NetworkImage(profileimage),
+        // ),
+        leading: Container(margin: sheet.pads(2.w, .2.h), child: imageforurl()),
+        centerTitle: true,
+        title: Text(
+          "Wish",
+          style: sheet.SemiMediumMedium(Colors.white),
+        ),
+        actions: [
+          PopupMenuButton(
+              itemBuilder: (context) => [
+                    PopupMenuItem(
+                      child: Text("Profile"),
+                      value: 1,
+                    ),
+                    PopupMenuItem(
+                      child: Text("Logout"),
+                      value: 2,
+                      onTap: () {
+                        logoutdata();
+                      },
+                    )
+                  ])
+        ],
+      ),
       body: SafeArea(
           child: Column(
-        children: [
-          Container(
-            width: 100.w,
-            color: col.primary,
-            padding: sheet.pads(4.w, 2.h),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: SizedBox()),
-                  Expanded(
-                    child: Container(
-                      child: Text(
-                        "Wish",
-                        style: sheet.SemiMediumMedium(Colors.white),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Icon(
-                          Icons.more_vert_rounded,
-                          color: Colors.white,
-                        )
-                      ],
-                    ),
-                  )
-                ]),
-          ),
-          chatsitem()
-        ],
+        children: [chatsitem()],
       )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -86,8 +153,7 @@ class _ChatsState extends State<Chats> {
               context,
               MaterialPageRoute(
                   builder: (_) => SelectPersonMessanger(
-                        user: u,
-                        sender: va['sender'],
+                        sender: names.toString(),
                       )));
         },
         child: Icon(Icons.message),
@@ -95,30 +161,31 @@ class _ChatsState extends State<Chats> {
     );
   }
 
-  var va;
-  Future getDocs() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection("roominfo")
-        .doc(u.phoneNumber)
-        .collection('room')
-        .get();
-    for (int i = 0; i < querySnapshot.docs.length; i++) {
-      var a = querySnapshot.docs[i].data() as Map;
-      // print(a['room']);
-      room.add(a['roomid']);
-      name.add(a['receiver']);
-    }
-    var v = await firebaseFirestore
-        .collection('users')
-        .doc(u.uid)
-        .collection('userinfo')
-        .get();
-    va = v.docs[0].data() as Map;
+  // getimage() => Container(
+  //       width: 300,
+  //       height: 100,
+  //       child: FutureBuilder<String>(
+  //         future: loadImage(),
+  //         builder: (
+  //           BuildContext context,
+  //           AsyncSnapshot<String> snapshot,
+  //         ) {
+  //           if (snapshot.hasData) {
+  //             return Text(snapshot.data.toString());
+  //           } else {
+  //             return Text('Loading data');
+  //           }
+  //         },
+  //       ),
+  //     );
 
-    setState(() {
-      // print(va['name'].toString());
-      // print(room.toString());
-    });
+  logoutdata() async {
+    await SharedPrefManager.setToken('');
+    await SharedPrefManager.setUserLogin(false);
+    await SharedPrefManager.setusername('');
+    await SharedPrefManager.setphone('');
+    Navigator.pushAndRemoveUntil(
+        context, MaterialPageRoute(builder: (_) => Phones()), (route) => false);
   }
 
   // Future<void> getData() async {
@@ -131,29 +198,44 @@ class _ChatsState extends State<Chats> {
   //     });
   //   });
   // }
+  imageforurl() {
+    if (profileimage == null) {
+      return Container();
+    } else if (profileimage != null) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(profileimage.toString()),
+      );
+    } else {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(profileimage.toString()),
+      );
+    }
+  }
 
   chatsitem() {
-    var uids = u.uid.toString();
+    var uids = uid.toString();
     return Expanded(
       child: ListView.builder(
         itemCount: room.length,
         itemBuilder: (BuildContext context, int i) {
           var d = room[i].toString();
           var n = name[i].toString();
-          //  print('hello' + d.toString());
+          // print('hello' + d.toString());
+          // print('reciver name' + n.toString());
           Future.delayed(Duration(seconds: 2)).then((value) {});
-          return Card(
-            child: Container(
-              height: 10.h,
-              color: Colors.grey.shade100,
+          return Container(
+            height: 10.h,
+            margin: EdgeInsets.symmetric(horizontal: 3.w),
+            color: Colors.grey.shade100,
+            child: Card(
               child: StreamBuilder<QuerySnapshot>(
                 stream: firebaseFirestore
                     .collection('chatroom')
                     .doc(d)
                     .collection('chat')
-                    .orderBy(
-                      'time',
-                    )
+                    .orderBy("time", descending: true)
                     .snapshots(),
                 // initialData: initialData,
                 builder: (BuildContext context,
@@ -171,22 +253,27 @@ class _ChatsState extends State<Chats> {
                         backgroundColor: Colors.blue,
                         radius: 35,
                       ),
-                      title: Text(map['receiver'].toString()),
+                      title: Text((map['rphone'].toString() == phone)
+                          ? map['sender'].toString()
+                          : map['receiver'].toString()),
                       subtitle: Text(
                         map['message'].toString(),
                         style: sheet.regularMedium(Colors.black),
                       ),
                       onTap: () {
                         print('object' + map['receiver'].toString());
+
+                        print(n.toString() +
+                            "name.toString() + phone.toString()");
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (_) => Chatroom(
                                     roomid: d,
-                                    receivername: n,
+                                    receivername: map['receiver'].toString(),
                                     receiverphone: map['rphone'],
-                                    senderphone: u.phoneNumber,
-                                    sender: '')));
+                                    senderphone: phone,
+                                    sender: names)));
                       },
                     );
                   }
@@ -198,4 +285,14 @@ class _ChatsState extends State<Chats> {
       ),
     );
   }
+
+  // showdia() => showDialog(
+  //     context: context,
+  //     builder: (_) {
+  //       return Container(
+  //         height: 100.h,
+  //         width: ,
+
+  //       );
+  //     });
 }

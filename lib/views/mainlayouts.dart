@@ -23,7 +23,13 @@ class _MainLayoutsState extends State<MainLayouts> {
 
   @override
   Widget build(BuildContext context) {
-    wd = [Chats(user: widget.user), BusniessChats(), Call()];
+    var g;
+    if (widget.user == null) {
+      g = null;
+    } else {
+      g = widget.user;
+    }
+    wd = [Chats(user: g), BusniessChats(), Call()];
     return Scaffold(
         body: SafeArea(child: wd[selectindex]),
         bottomNavigationBar: BottomNavBar(

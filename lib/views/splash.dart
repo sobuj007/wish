@@ -1,3 +1,5 @@
+import 'package:Wish/Sharedpref/SharedPrefManager.dart';
+import 'package:Wish/views/mainlayouts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -12,16 +14,21 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
-  starttimer() {
-    Future.delayed(Duration(seconds: 2)).then((value) => {
-          Navigator.push(context, CupertinoPageRoute(builder: (_) => Phones()))
-        });
+  starttimer() async {
+    if (await SharedPrefManager.isUserLogin() == true) {
+      Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (_) => MainLayouts()), (route) => false);
+    }
+
+    // Future.delayed(Duration(seconds: 2)).then((value) => {
+    //       Navigator.push(context, CupertinoPageRoute(builder: (_) => Phones()))
+    //     });
   }
 
   @override
   void initState() {
     // TODO: implement initState
-    //starttimer();
+    starttimer();
     super.initState();
   }
 
