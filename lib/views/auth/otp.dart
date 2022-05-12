@@ -47,7 +47,10 @@ class _OtpVerificationState extends State<OtpVerification> {
                 child: Container(
                   width: 40.w,
                   height: 25.h,
-                  color: Colors.greenAccent,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage('assets/otps.jpg'),
+                          fit: BoxFit.cover)),
                 ),
               ),
               Padding(
@@ -192,7 +195,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                       )));
         }
       } else {
-        checkuser(uid);
+        checkuser(uid, result.user!.phoneNumber.toString());
       }
     }).catchError((e) {
       print(e);
@@ -225,29 +228,23 @@ class _OtpVerificationState extends State<OtpVerification> {
   // }
 
   bool? exist = false;
-  checkuser(uid) async {
+  checkuser(uid, phone) async {
     try {
-      await FirebaseFirestore.instance
-          .doc('users/$uid')
-          .get()
-          .then((doc) async {
-        exist = doc.exists;
-        print(exist);
-        await SharedPrefManager.setToken(uid);
-        await SharedPrefManager.setUserLogin(true);
-        await SharedPrefManager.setphone(phone);
-        await SharedPrefManager.setphone(name);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Welcome ...'),
-          backgroundColor: Colors.green,
-        ));
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MainLayouts(
-                      user: userdata,
-                    )));
-      });
+      await SharedPrefManager.setToken(uid);
+      await SharedPrefManager.setUserLogin(true);
+      await SharedPrefManager.setphone(phone.toString());
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Welcome ...'),
+        backgroundColor: Colors.green,
+      ));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MainLayouts(
+                    user: userdata,
+                  )));
+
       //return exist;
     } catch (e) {
       print(e);

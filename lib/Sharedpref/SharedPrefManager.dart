@@ -65,4 +65,9 @@ class SharedPrefManager {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString("name");
   }
+
+  static Future logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.clear();
+  }
 }

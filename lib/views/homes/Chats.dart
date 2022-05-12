@@ -1,5 +1,7 @@
 import 'package:Wish/Sharedpref/SharedPrefManager.dart';
+import 'package:Wish/views/auth/changeprofile.dart';
 import 'package:Wish/views/auth/phones.dart';
+import 'package:Wish/views/auth/changepro.dart';
 import 'package:Wish/views/chatroom/chatroom.dart';
 import 'package:Wish/views/chatscontact/selectperson.dart';
 import 'package:Wish/views/homes/Singelchat.dart';
@@ -47,7 +49,15 @@ class _ChatsState extends State<Chats> {
   getuserdatas() async {
     uid = await SharedPrefManager.getToken();
     phone = await SharedPrefManager.getphone();
+    print(uid);
+    print(phone);
 
+    getDocs();
+    loadImage();
+    getusername();
+  }
+
+  getusername() async {
     DocumentSnapshot variable = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -58,8 +68,18 @@ class _ChatsState extends State<Chats> {
     await SharedPrefManager.setusername(names);
 
     print(variable['username'].toString());
-    getDocs();
-    loadImage();
+    // var collection = FirebaseFirestore.instance
+    //     .collection('users')
+    //     .doc(uid)
+    //     .collection('userinfo');
+    // var docSnapshot = await collection.doc(phone).get();
+    // if (docSnapshot.exists) {
+    //   Map<String, dynamic> data = docSnapshot.data()!;
+
+    //   // You can then retrieve the value from the Map like this:
+    //   var name = data['name'];
+    //   print('this name' + name.toString());
+    // }
   }
 
   dynamic profileimage;
@@ -79,7 +99,6 @@ class _ChatsState extends State<Chats> {
       profileimage = variable['image'].toString();
 
       print("this is " + profileimage.toString());
-      setState(() {});
     } catch (e) {
       print(e);
     }
@@ -112,6 +131,11 @@ class _ChatsState extends State<Chats> {
     });
   }
 
+  changeit() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) => ChangeProfiles()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,7 +144,12 @@ class _ChatsState extends State<Chats> {
         // leading: PhotoView(
         //   imageProvider: NetworkImage(profileimage),
         // ),
-        leading: Container(margin: sheet.pads(2.w, .2.h), child: imageforurl()),
+        leading: GestureDetector(
+          child: Container(margin: sheet.pads(2.w, .2.h), child: imageforurl()),
+          onTap: () {
+            showdia();
+          },
+        ),
         centerTitle: true,
         title: Text(
           "Wish",
@@ -129,10 +158,14 @@ class _ChatsState extends State<Chats> {
         actions: [
           PopupMenuButton(
               itemBuilder: (context) => [
-                    PopupMenuItem(
-                      child: Text("Profile"),
-                      value: 1,
-                    ),
+                    // PopupMenuItem(
+                    //   child: Text("Profile"),
+                    //   value: 1,
+                    //   onTap: () {
+                    //     Navigator.push(context,
+                    //         MaterialPageRoute(builder: (_) => ChangePro()));
+                    //   },
+                    // ),
                     PopupMenuItem(
                       child: Text("Logout"),
                       value: 2,
@@ -144,8 +177,15 @@ class _ChatsState extends State<Chats> {
         ],
       ),
       body: SafeArea(
-          child: Column(
-        children: [chatsitem()],
+          child: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/patts.jpg'),
+                opacity: .3,
+                fit: BoxFit.cover)),
+        child: Column(
+          children: [chatsitem()],
+        ),
       )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -214,6 +254,34 @@ class _ChatsState extends State<Chats> {
     }
   }
 
+  contactimages() async {
+    DocumentSnapshot variable = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('userinfo')
+        .doc(phone)
+        .get();
+    //  print('bal' + variable.toString());
+
+    profileimage = variable['image'].toString();
+
+    print("this is " + profileimage.toString());
+    setState(() {});
+    if (profileimage == null) {
+      return Container();
+    } else if (profileimage != null) {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(profileimage.toString()),
+      );
+    } else {
+      return CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(profileimage.toString()),
+      );
+    }
+  }
+
   chatsitem() {
     var uids = uid.toString();
     return Expanded(
@@ -228,7 +296,8 @@ class _ChatsState extends State<Chats> {
           return Container(
             height: 10.h,
             margin: EdgeInsets.symmetric(horizontal: 3.w),
-            color: Colors.grey.shade100,
+            // color: Colors.grey.shade100,
+
             child: Card(
               child: StreamBuilder<QuerySnapshot>(
                 stream: firebaseFirestore
@@ -251,11 +320,17 @@ class _ChatsState extends State<Chats> {
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.blue,
-                        radius: 35,
+                        radius: 30,
+                        child: Text(
+                          (map['rphone'].toString() == phone)
+                              ? map['receiver'].toString()[0]
+                              : map['sender'].toString()[0],
+                          style: sheet.boldBold(Colors.white),
+                        ),
                       ),
                       title: Text((map['rphone'].toString() == phone)
-                          ? map['sender'].toString()
-                          : map['receiver'].toString()),
+                          ? map['receiver'].toString()
+                          : map['sender'].toString()),
                       subtitle: Text(
                         map['message'].toString(),
                         style: sheet.regularMedium(Colors.black),
@@ -269,11 +344,14 @@ class _ChatsState extends State<Chats> {
                             context,
                             MaterialPageRoute(
                                 builder: (_) => Chatroom(
-                                    roomid: d,
-                                    receivername: map['receiver'].toString(),
-                                    receiverphone: map['rphone'],
-                                    senderphone: phone,
-                                    sender: names)));
+                                      roomid: d,
+                                      receivername: map['receiver'].toString(),
+                                      receiverphone: map['rphone'],
+                                      receiverimg: map['rimg'].toString(),
+                                      senderphone: phone,
+                                      sender: names,
+                                      senderimg: profileimage.toString(),
+                                    )));
                       },
                     );
                   }
@@ -286,13 +364,59 @@ class _ChatsState extends State<Chats> {
     );
   }
 
-  // showdia() => showDialog(
-  //     context: context,
-  //     builder: (_) {
-  //       return Container(
-  //         height: 100.h,
-  //         width: ,
-
-  //       );
-  //     });
+  showdia() => showDialog(
+      context: context,
+      builder: (_) {
+        return Container(
+          color: Colors.white,
+          margin: sheet.pads(3.w, 5.h),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 5.h,
+              ),
+              CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(profileimage.toString()),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              Container(
+                height: 6.h,
+                width: 70.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(width: .5, color: Colors.grey)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    names,
+                    style: sheet.mediumBold(Colors.black),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              Container(
+                height: 6.h,
+                width: 70.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(width: .5, color: Colors.grey)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    phone,
+                    style: sheet.mediumBold(Colors.black),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      });
 }

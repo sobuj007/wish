@@ -81,7 +81,10 @@ class _PhonesState extends State<Phones> {
                 Container(
                   height: 16.h,
                   width: 50.w,
-                  color: Colors.green,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage('assets/rs.gif'),
+                          fit: BoxFit.cover)),
                 ),
                 SizedBox(
                   height: 10,

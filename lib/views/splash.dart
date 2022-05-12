@@ -43,7 +43,9 @@ class _SplashState extends State<Splash> {
           children: [
             Container(
               height: 20.h,
-              color: Colors.greenAccent,
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('assets/rs.gif'), fit: BoxFit.cover)),
             ),
             SizedBox(
               height: 3.h,

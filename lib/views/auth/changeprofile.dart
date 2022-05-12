@@ -28,6 +28,7 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
   void initState() {
     // TODO: implement initState
     udata = widget.u;
+
     super.initState();
   }
 
@@ -180,7 +181,7 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
     await SharedPrefManager.setUserLogin(true);
     await SharedPrefManager.setusername(udata.displayName);
     await SharedPrefManager.setphone(udata.phoneNumber);
-
+  
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('Welcome ...'),
       backgroundColor: Colors.lightGreen,

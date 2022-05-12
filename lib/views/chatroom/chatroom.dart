@@ -1,7 +1,12 @@
 import 'package:Wish/main.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_engine.dart';
+import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
+import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialogflow_grpc/generated/google/protobuf/timestamp.pbjson.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Sharedpref/SharedPrefManager.dart';
@@ -10,17 +15,21 @@ class Chatroom extends StatefulWidget {
   final roomid;
   final receivername;
   final receiverphone;
+  final receiverimg;
   final sender;
   final senderphone;
+  final senderimg;
 
-  Chatroom(
-      {Key? key,
-      required this.roomid,
-      required this.receivername,
-      required this.receiverphone,
-      required this.senderphone,
-      required this.sender})
-      : super(key: key);
+  Chatroom({
+    Key? key,
+    required this.roomid,
+    required this.receivername,
+    required this.receiverphone,
+    this.receiverimg,
+    required this.senderphone,
+    required this.sender,
+    this.senderimg,
+  }) : super(key: key);
 
   @override
   State<Chatroom> createState() => _ChatroomState();
@@ -29,11 +38,18 @@ class Chatroom extends StatefulWidget {
 class _ChatroomState extends State<Chatroom> {
   TextEditingController _inputs = new TextEditingController();
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  int? _remoteUid;
+  bool _localUserJoined = false;
+  late RtcEngine _engine;
+  String appId = '020f338d91ba4be49e1f22232627028b';
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
     getuserdatas();
+    loadImage();
   }
 
   var phonenumbers;
@@ -48,6 +64,68 @@ class _ChatroomState extends State<Chatroom> {
     print(uid);
   }
 
+  dynamic profileimage;
+  loadImage() async {
+    //current user id
+
+    try {
+      //collect the image name\
+      DocumentSnapshot variable = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('userinfo')
+          .doc(phonenumbers)
+          .get();
+      //  print('bal' + variable.toString());
+
+      profileimage = variable['image'].toString();
+
+      print("this is " + profileimage.toString());
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> initAgora() async {
+    // retrieve permissions
+    await [Permission.microphone, Permission.camera].request();
+
+    //create the engine
+    _engine = await RtcEngine.create(appId);
+    await _engine.enableVideo();
+    _engine.setEventHandler(
+      RtcEngineEventHandler(
+        joinChannelSuccess: (String channel, int uid, int elapsed) {
+          print("local user $uid joined");
+          setState(() {
+            _localUserJoined = true;
+          });
+        },
+        userJoined: (int uid, int elapsed) {
+          print("remote user $uid joined");
+          setState(() {
+            _remoteUid = uid;
+          });
+        },
+        userOffline: (int uid, UserOfflineReason reason) {
+          print("remote user $uid left channel");
+          setState(() {
+            _remoteUid = null;
+          });
+        },
+      ),
+    );
+
+    await _engine.joinChannel(
+        '9a87cf7076444e3d867b727b2b65793d', 'testing', null, 0);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,6 +133,26 @@ class _ChatroomState extends State<Chatroom> {
         title: Text((widget.receiverphone == phonenumbers)
             ? widget.receivername
             : widget.sender),
+        actions: [
+          Container(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.phone),
+            ),
+          ),
+          GestureDetector(
+            child: Container(
+              margin: EdgeInsets.only(right: 3.w),
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: Icon(Icons.videocam),
+              ),
+            ),
+            onTap: () {
+              showdia();
+            },
+          ),
+        ],
       ),
       body: SafeArea(
           child: Container(
@@ -204,8 +302,53 @@ class _ChatroomState extends State<Chatroom> {
     });
     _inputs.clear();
   }
-}
 
+  showdia() => showDialog(
+      context: context,
+      builder: (_) {
+        return Container(
+            height: 100.h,
+            color: Colors.white,
+            child: Stack(
+              children: [
+                Center(
+                  child: _remoteVideo(),
+                ),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    width: 100,
+                    height: 150,
+                    child: Center(
+                      child: _localUserJoined
+                          ? RtcLocalView.SurfaceView()
+                          : CircularProgressIndicator(),
+                    ),
+                  ),
+                ),
+              ],
+            ));
+      });
+
+  // Display remote user's video
+  Widget _remoteVideo() {
+    if (_remoteUid != null) {
+      return RtcRemoteView.SurfaceView(
+        uid: _remoteUid!,
+        channelId: 'Testing',
+      );
+    } else {
+      return Text(
+        'Please wait for remote user to join',
+        style: TextStyle(
+            decoration: TextDecoration.none,
+            fontSize: 2.h,
+            color: Colors.black),
+        textAlign: TextAlign.center,
+      );
+    }
+  }
+}
 
 //  appBar: AppBar(
 //         title: Text("data"),
