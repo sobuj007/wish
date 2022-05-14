@@ -1,4 +1,5 @@
 import 'package:Wish/main.dart';
+import 'package:Wish/views/mainlayouts.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
@@ -47,9 +48,10 @@ class _ChatroomState extends State<Chatroom> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
+    print(widget.senderimg);
+    print(widget.receiverimg);
     getuserdatas();
-    loadImage();
+    // loadImage();
   }
 
   var phonenumbers;
@@ -92,7 +94,7 @@ class _ChatroomState extends State<Chatroom> {
 
     //create the engine
     _engine = await RtcEngine.create(appId);
-    await _engine.enableVideo();
+    await _engine.enableAudio();
     _engine.setEventHandler(
       RtcEngineEventHandler(
         joinChannelSuccess: (String channel, int uid, int elapsed) {
@@ -130,7 +132,19 @@ class _ChatroomState extends State<Chatroom> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text((widget.receiverphone == phonenumbers)
+        leading: GestureDetector(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(Icons.arrow_back_ios),
+          ),
+          onTap: () {
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => MainLayouts()),
+                (route) => false);
+          },
+        ),
+        title: Text((widget.receiverphone != phonenumbers)
             ? widget.receivername
             : widget.sender),
         actions: [
@@ -287,6 +301,8 @@ class _ChatroomState extends State<Chatroom> {
   // }
 
   sendmessage() async {
+    print('objectr' + widget.receiverimg.toString());
+    print('objectU' + widget.senderimg.toString());
     await FirebaseFirestore.instance
         .collection('chatroom')
         .doc(widget.roomid)
@@ -296,7 +312,9 @@ class _ChatroomState extends State<Chatroom> {
       'sender': names.toString(),
       'receiver': widget.receivername,
       'rphone': widget.receiverphone,
+      'rimage': widget.receiverimg,
       'sphone': phonenumbers,
+      'simage': widget.senderimg,
       'attachment': '',
       'time': Timestamp.now(),
     });

@@ -1,4 +1,5 @@
 import 'package:Wish/Sharedpref/SharedPrefManager.dart';
+import 'package:Wish/views/allusers/allusers.dart';
 import 'package:Wish/views/auth/changeprofile.dart';
 import 'package:Wish/views/auth/phones.dart';
 import 'package:Wish/views/auth/changepro.dart';
@@ -99,6 +100,7 @@ class _ChatsState extends State<Chats> {
       profileimage = variable['image'].toString();
 
       print("this is " + profileimage.toString());
+      setState(() {});
     } catch (e) {
       print(e);
     }
@@ -192,9 +194,9 @@ class _ChatsState extends State<Chats> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => SelectPersonMessanger(
-                        sender: names.toString(),
-                      )));
+                  builder: (_) => Allusers(
+                      sender: names.toString(),
+                      imgs: profileimage.toString())));
         },
         child: Icon(Icons.message),
       ),
@@ -228,16 +230,6 @@ class _ChatsState extends State<Chats> {
         context, MaterialPageRoute(builder: (_) => Phones()), (route) => false);
   }
 
-  // Future<void> getData() async {
-  //   final CollectionReference v =
-  //       FirebaseFirestore.instance.collection('users');
-  //   v.get().then((QuerySnapshot snapshot) {
-  //     snapshot.docs.forEach((DocumentSnapshot doc) {
-  //       print(doc.id);
-  //       print(doc.exists);
-  //     });
-  //   });
-  // }
   imageforurl() {
     if (profileimage == null) {
       return Container();
@@ -318,17 +310,22 @@ class _ChatsState extends State<Chats> {
                         snapshot.data?.docs[0].data() as Map<String, dynamic>;
 
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.blue,
-                        radius: 30,
-                        child: Text(
-                          (map['rphone'].toString() == phone)
-                              ? map['receiver'].toString()[0]
-                              : map['sender'].toString()[0],
-                          style: sheet.boldBold(Colors.white),
-                        ),
-                      ),
-                      title: Text((map['rphone'].toString() == phone)
+                      leading: (map['rimage'] == null)
+                          ? CircleAvatar(
+                              backgroundColor: Colors.blue,
+                              radius: 30,
+                              child: Text(
+                                'w',
+                                style: sheet.boldBold(Colors.white),
+                              ),
+                            )
+                          : CircleAvatar(
+                              backgroundColor: Colors.blue,
+                              radius: 30,
+                              backgroundImage:
+                                  NetworkImage(map['rimage'].toString()),
+                            ),
+                      title: Text((map['rphone'].toString() != phone)
                           ? map['receiver'].toString()
                           : map['sender'].toString()),
                       subtitle: Text(
@@ -340,6 +337,8 @@ class _ChatsState extends State<Chats> {
 
                         print(n.toString() +
                             "name.toString() + phone.toString()");
+                        print('objectr' + map['rimage'].toString().toString());
+                        print('objectU' + profileimage.toString());
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -347,7 +346,7 @@ class _ChatsState extends State<Chats> {
                                       roomid: d,
                                       receivername: map['receiver'].toString(),
                                       receiverphone: map['rphone'],
-                                      receiverimg: map['rimg'].toString(),
+                                      receiverimg: map['rimage'].toString(),
                                       senderphone: phone,
                                       sender: names,
                                       senderimg: profileimage.toString(),

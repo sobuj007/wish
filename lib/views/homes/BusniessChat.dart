@@ -38,7 +38,7 @@ class _BusniessChatsState extends State<BusniessChats> {
 
   @override
   void dispose() {
-    _recorderStatus!.cancel();
+    _recorderStatus?.cancel();
     _audioStreamSubscription?.cancel();
     super.dispose();
   }
@@ -65,7 +65,7 @@ class _BusniessChatsState extends State<BusniessChats> {
   void stopStream() async {
     await _recorder.stop();
     await _audioStreamSubscription?.cancel();
-    await _audioStream!.close();
+    await _audioStream?.close();
   }
 
   void handleSubmitted(text) async {
@@ -104,7 +104,7 @@ class _BusniessChatsState extends State<BusniessChats> {
     _audioStream = BehaviorSubject<List<int>>();
     _audioStreamSubscription = _recorder.audioStream.listen((data) {
       print(data);
-      _audioStream!.add(data);
+      _audioStream?.add(data);
     });
 
     // TODO Create SpeechContexts
@@ -173,6 +173,11 @@ class _BusniessChatsState extends State<BusniessChats> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/patts.jpg'),
+                fit: BoxFit.cover,
+                opacity: .4)),
         margin: EdgeInsets.all(5.0),
         child: Column(children: <Widget>[
           Flexible(
@@ -210,7 +215,7 @@ class _BusniessChatsState extends State<BusniessChats> {
                       IconButton(
                         iconSize: 30.0,
                         icon: Icon(_isRecording ? Icons.mic : Icons.mic_off),
-                        onPressed: !_isRecording ? stopStream : handleStream,
+                        onPressed: _isRecording ? stopStream : handleStream,
                       ),
                     ],
                   ),

@@ -176,12 +176,18 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
       'uid': uid.toString(),
       'image': finalpath.toString(),
     });
+    await FirebaseFirestore.instance.collection('allusers').doc().set({
+      'username': textin.text,
+      'phone': p.toString(),
+      'uid': uid.toString(),
+      'image': finalpath.toString(),
+    });
     print('user creation success');
     await SharedPrefManager.setToken(uid);
     await SharedPrefManager.setUserLogin(true);
     await SharedPrefManager.setusername(udata.displayName);
     await SharedPrefManager.setphone(udata.phoneNumber);
-  
+
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('Welcome ...'),
       backgroundColor: Colors.lightGreen,
