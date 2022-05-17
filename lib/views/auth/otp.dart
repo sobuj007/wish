@@ -233,7 +233,14 @@ class _OtpVerificationState extends State<OtpVerification> {
       await SharedPrefManager.setToken(uid);
       await SharedPrefManager.setUserLogin(true);
       await SharedPrefManager.setphone(phone.toString());
-
+      String fcm = await SharedPrefManager.getFCMToken();
+      print(fcm);
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('userinfo')
+          .doc(phone)
+          .update({'fcmtoken': fcm});
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Welcome ...'),
         backgroundColor: Colors.green,

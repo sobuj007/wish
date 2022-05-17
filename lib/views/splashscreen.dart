@@ -1,5 +1,8 @@
+import 'package:Wish/notifiy/Messaging.dart';
 import 'package:Wish/views/splash.dart';
 import 'package:flutter/material.dart';
+
+import '../Sharedpref/SharedPrefManager.dart';
 
 class SplashScreen extends StatefulWidget {
   SplashScreen({Key? key}) : super(key: key);
@@ -16,7 +19,9 @@ class _SplashScreenState extends State<SplashScreen> {
     starttimer();
   }
 
-  starttimer() {
+  starttimer() async {
+    Messaging().sendtoAll("Wish", "welcome to wish");
+
     Future.delayed(Duration(seconds: 4)).then((value) => {
           Navigator.pushAndRemoveUntil(context,
               MaterialPageRoute(builder: (_) => Splash()), (route) => false)

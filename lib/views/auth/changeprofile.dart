@@ -24,11 +24,12 @@ class ChangeProfiles extends StatefulWidget {
 class _ChangeProfilesState extends State<ChangeProfiles> {
   late User udata;
   TextEditingController textin = new TextEditingController();
+  var fcmtoken;
   @override
   void initState() {
     // TODO: implement initState
     udata = widget.u;
-
+    fcmtoken = SharedPrefManager.getFCMToken();
     super.initState();
   }
 
@@ -165,6 +166,7 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
   }
 
   addnewuser(uid, p, context) async {
+    String fcmtok = await SharedPrefManager.getFCMToken();
     await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -175,6 +177,7 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
       'phone': p.toString(),
       'uid': uid.toString(),
       'image': finalpath.toString(),
+      'fcmtoken': fcmtok.toString(),
     });
     await FirebaseFirestore.instance.collection('allusers').doc().set({
       'username': textin.text,

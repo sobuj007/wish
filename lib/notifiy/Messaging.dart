@@ -1,46 +1,91 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 
 class Messaging {
-  static final Client client = Client();
-  static const String serverKey =
-      'AAAAWnfs3mQ:APA91bGTTnGhHnlrAZC-eXn4bJmJOKOXPQ7eXiAuSHeM4oOFbVCgBsWAqIqQ2hJDMD1E9uYPVjW5_TxeMkap3VDgG21lUgqEBeXEH2Osns0ANBJULNjmIvfXcYDdYvUKvFBFn596eMT-';
+  String keys =
+      "AAAAQqrcf8Y:APA91bFV0_ezt5MKYEo7zwc0M55B_rpvh5mM1mE65oH8SknNGNYtuutaphMdn0OvsO14_VYDfNiAu7sPcF5JZfhD-ZiF5WZbsqjoXwK-BY3bZklOqgckjElAThe9xy9U7Cb-O7LeAN6l";
+  var request =
+      http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
 
-  static Future<Response> sendToAll({
-    required String title,
-    required String body,
-  }) =>
-      sendToTopic(title: title, body: body, topic: 'all');
+  sendtoAll(title, messagedata) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$keys'
+    };
+    request.body = json.encode({
+      "to": "/topics/all",
+      "priority": "high",
+      "sound": "true",
+      "notification": {
+        "title": "$title",
+        "body": "$messagedata",
+        "text": "Text"
+      }
+    });
+    request.headers.addAll(headers);
 
-  static Future<Response> sendToTopic(
-          {required String title,
-          required String body,
-          required String topic}) =>
-      sendTo(title: title, body: body, fcmToken: '/topics/$topic');
+    http.StreamedResponse response = await request.send();
 
-  static Future<Response> sendTo({
-    required String title,
-    required String body,
-    required String fcmToken,
-  }) =>
-      client.post(
-        Uri.parse("https://fcm.googleapis.com/fcm/send"),
-        body: json.encode({
-          'notification': {'body': '$body', 'title': '$title'},
-          'priority': 'high',
-          'data': {
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'id': '1',
-            'status': 'done',
-          },
-          'to': '$fcmToken',
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=$serverKey',
-        },
-      );
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
+  sendtoTopics(title, messagedata, topic) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$keys'
+    };
+    request.body = json.encode({
+      "to": "/topics/$topic",
+      "priority": "high",
+      "sound": "true",
+      "notification": {
+        "title": "$title",
+        "body": "$messagedata",
+        "text": "Text"
+      }
+    });
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
+
+  sendtoSingel(title, messagedata, fcm) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$keys'
+    };
+    request.body = json.encode({
+      "to": "$fcm",
+      "priority": "high",
+      "sound": "true",
+      "notification": {
+        "title": "$title",
+        "body": "$messagedata",
+        "text": "Text"
+      }
+    });
+    request.headers.addAll(headers);
+
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      print(response.reasonPhrase);
+    }
+  }
 }

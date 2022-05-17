@@ -15,10 +15,12 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
   starttimer() async {
+    // String fcmtok = await SharedPrefManager.getFCMToken();
+    // print("lol " + fcmtok);
     if (await SharedPrefManager.isUserLogin() == true) {
       Navigator.pushAndRemoveUntil(context,
           MaterialPageRoute(builder: (_) => MainLayouts()), (route) => false);
-    }
+    } else {}
 
     // Future.delayed(Duration(seconds: 2)).then((value) => {
     //       Navigator.push(context, CupertinoPageRoute(builder: (_) => Phones()))

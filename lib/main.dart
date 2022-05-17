@@ -1,3 +1,4 @@
+import 'package:Wish/notifiy/notification.dart';
 import 'package:Wish/views/splashscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +19,18 @@ void main() async {
 }
 
 itit() async {
+  FirebaseMessaging fmassage = FirebaseMessaging.instance;
+
+  fmassage.subscribeToTopic('all');
   String? fcmtoken = await FirebaseMessaging.instance.getToken();
   SharedPrefManager.setFCMToken(fcmtoken);
-  print("fcm" + fcmtoken.toString());
+  print(fcmtoken.toString());
+  final firebaseMessaging = FCM();
+  firebaseMessaging.setNotifications();
+
+  //  firebaseMessaging.streamCtlr.stream.listen(_changeData);
+  //  firebaseMessaging.bodyCtlr.stream.listen(_changeBody);
+  //  firebaseMessaging.titleCtlr.stream.listen(_changeTitle);
 }
 
 class ChatsApp extends StatelessWidget {

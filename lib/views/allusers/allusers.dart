@@ -242,9 +242,19 @@ class _AllusersState extends State<Allusers> {
     var ud = uid.toString();
     await FirebaseFirestore.instance
         .collection('chatroom')
-        .doc(d.toString())
+        .doc(d)
         .collection('chat')
-        .add({});
+        .add({
+      'message': 'welcome,$names send you request',
+      'sender': names.toString(),
+      'receiver': receiver,
+      'rphone': rphone,
+      'rimage': rimg,
+      'sphone': phonenumbers,
+      'simage': widget.imgs,
+      'attachment': '',
+      'time': Timestamp.now(),
+    });
     await FirebaseFirestore.instance
         .collection('users')
         .doc(ud.toString())
@@ -266,7 +276,7 @@ class _AllusersState extends State<Allusers> {
       'roomid': d.toString(),
       'user1': rphone,
       'rname': receiver,
-      'rimgae': rimg,
+      'rimage': rimg,
       'user2': phonenumbers,
       'uname': widget.sender,
       'uimage': widget.imgs
@@ -279,14 +289,16 @@ class _AllusersState extends State<Allusers> {
       'roomid': d.toString(),
       'user1': rphone,
       'rname': receiver,
-      'rimgae': rimg,
+      'rimage': rimg,
       'user2': phonenumbers,
       'uname': widget.sender,
       'uimage': widget.imgs
     });
     FirebaseMessaging fmassage = FirebaseMessaging.instance;
-    fmassage.subscribeToTopic(d);
+
+    // fmassage.subscribeToTopic(d.toString());
     print('success');
+    print(d.replaceAll(new RegExp(r'[^\w\s]+'), ''));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
