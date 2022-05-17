@@ -29,8 +29,12 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
   void initState() {
     // TODO: implement initState
     udata = widget.u;
-    fcmtoken = SharedPrefManager.getFCMToken();
+    tokensdata();
     super.initState();
+  }
+
+  tokensdata() async {
+    fcmtoken = await SharedPrefManager.getFCMToken();
   }
 
   FirebaseStorage storage = FirebaseStorage.instance;
@@ -181,10 +185,14 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
     });
     await FirebaseFirestore.instance.collection('allusers').doc().set({
       'username': textin.text,
-      'phone': p.toString(),
+      'phone': p,
       'uid': uid.toString(),
       'image': finalpath.toString(),
     });
+    await FirebaseFirestore.instance
+        .collection('alltokens')
+        .doc(p)
+        .set({'fcmtoken': fcmtoken});
     print('user creation success');
     await SharedPrefManager.setToken(uid);
     await SharedPrefManager.setUserLogin(true);

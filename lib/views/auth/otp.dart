@@ -241,6 +241,11 @@ class _OtpVerificationState extends State<OtpVerification> {
           .collection('userinfo')
           .doc(phone)
           .update({'fcmtoken': fcm});
+      FirebaseFirestore.instance
+          .collection('alltokens')
+          .doc(phone)
+          .update({'fcmtoken': fcm});
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Welcome ...'),
         backgroundColor: Colors.green,

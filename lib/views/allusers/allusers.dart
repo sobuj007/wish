@@ -294,11 +294,12 @@ class _AllusersState extends State<Allusers> {
       'uname': widget.sender,
       'uimage': widget.imgs
     });
-    FirebaseMessaging fmassage = FirebaseMessaging.instance;
+
+    // FirebaseMessaging fmassage = FirebaseMessaging.instance;
 
     // fmassage.subscribeToTopic(d.toString());
-    print('success');
-    print(d.replaceAll(new RegExp(r'[^\w\s]+'), ''));
+    // print('success');
+    // print(d.replaceAll(new RegExp(r'[^\w\s]+'), ''));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

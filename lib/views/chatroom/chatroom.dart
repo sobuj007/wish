@@ -1,4 +1,6 @@
 import 'package:Wish/main.dart';
+import 'package:Wish/notifiy/Messaging.dart';
+import 'package:Wish/views/callerscreen/CallScreen.dart';
 import 'package:Wish/views/mainlayouts.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
@@ -148,11 +150,18 @@ class _ChatroomState extends State<Chatroom> {
             ? widget.receivername
             : widget.sender),
         actions: [
-          Container(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.phone),
+          GestureDetector(
+            child: Container(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(Icons.phone),
+              ),
             ),
+            onTap: () {
+              // Navigator.push(
+              //     context, MaterialPageRoute(builder: (_) => CallScreen()));
+              shoaudioCalldia();
+            },
           ),
           GestureDetector(
             child: Container(
@@ -273,7 +282,10 @@ class _ChatroomState extends State<Chatroom> {
                       ),
                     ),
                     onTap: () {
-                      sendmessage();
+                      if (_inputs.text == null) {
+                      } else {
+                        sendmessage();
+                      }
                     },
                   )
                 ],
@@ -284,25 +296,20 @@ class _ChatroomState extends State<Chatroom> {
       ),
     );
   }
-  //  Future getDocs() async {
-  //   QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(u.uid)
-  //       .collection('chatroom')
-  //       .get();
-  //   for (int i = 0; i < querySnapshot.docs.length; i++) {
-  //     var a = querySnapshot.docs[i].data() as Map;
-  //     // print(a['room']);
-  //     room.add(a['room']);
-  //   }
-  //   setState(() {
-  //     print(room.toString());
-  //   });
-  // }
 
   sendmessage() async {
     print('objectr' + widget.receiverimg.toString());
     print('objectU' + widget.senderimg.toString());
+    var token = await SharedPrefManager.getFCMToken();
+
+    DocumentSnapshot variable = await FirebaseFirestore.instance
+        .collection('alltokens')
+        .doc(widget.receiverphone)
+        .get();
+    var ftokens = variable['fcmtoken'].toString();
+    print(ftokens.toString());
+    var b = widget.receiverphone;
+    Messaging().sendtoSingel("Whis $b", _inputs.text.toString(), ftokens);
     await FirebaseFirestore.instance
         .collection('chatroom')
         .doc(widget.roomid)
@@ -315,6 +322,7 @@ class _ChatroomState extends State<Chatroom> {
       'rimage': widget.receiverimg,
       'sphone': phonenumbers,
       'simage': widget.senderimg,
+      'sfcmtoken': token,
       'attachment': '',
       'time': Timestamp.now(),
     });
@@ -347,6 +355,32 @@ class _ChatroomState extends State<Chatroom> {
               ],
             ));
       });
+  shoaudioCalldia() => showDialog(
+      context: context,
+      builder: (_) {
+        return Container(
+            height: 100.h,
+            color: Colors.white,
+            child: Stack(
+              children: [
+                Center(
+                  child: _remoteVideo(),
+                ),
+                // Align(
+                //   alignment: Alignment.topLeft,
+                //   child: Container(
+                //     width: 100,
+                //     height: 150,
+                //     child: Center(
+                //       child: _localUserJoined
+                //           ? RtcLocalView.SurfaceView()
+                //           : CircularProgressIndicator(),
+                //     ),
+                //   ),
+                // ),
+              ],
+            ));
+      });
 
   // Display remote user's video
   Widget _remoteVideo() {
@@ -356,13 +390,66 @@ class _ChatroomState extends State<Chatroom> {
         channelId: 'Testing',
       );
     } else {
-      return Text(
-        'Please wait for remote user to join',
-        style: TextStyle(
-            decoration: TextDecoration.none,
-            fontSize: 2.h,
-            color: Colors.black),
-        textAlign: TextAlign.center,
+      var name = widget.receivername;
+      return Container(
+        height: 100.h,
+        width: 100.w,
+        decoration: BoxDecoration(color: Colors.black87),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(widget.receiverimg),
+              ),
+              SizedBox(
+                height: 5.h,
+              ),
+              Text(
+                'Calling $name',
+                style: TextStyle(
+                    decoration: TextDecoration.none,
+                    fontSize: 2.h,
+                    color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 8.h,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.grey,
+                    radius: 35,
+                    child: Icon(
+                      Icons.mic,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 3.w,
+                  ),
+                  GestureDetector(
+                    child: CircleAvatar(
+                      backgroundColor: Colors.redAccent,
+                      radius: 35,
+                      child: Icon(
+                        Icons.call,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
       );
     }
   }

@@ -231,7 +231,12 @@ class _ChatsState extends State<Chats> {
         .collection('userinfo')
         .doc(phone)
         .update({'fcmtoken': ''});
+    FirebaseFirestore.instance
+        .collection('alltoken')
+        .doc(phone)
+        .update({'fcmtoken': ''});
     await SharedPrefManager.setToken('');
+    await SharedPrefManager.setFCMToken('');
     await SharedPrefManager.setUserLogin(false);
     await SharedPrefManager.setusername('');
     await SharedPrefManager.setphone('');
@@ -325,6 +330,18 @@ class _ChatsState extends State<Chats> {
                         Map<String, dynamic> map = snapshot.data?.docs[0].data()
                             as Map<String, dynamic>;
 
+                        // var n = (map['rphone'].toString() != phone)
+                        //     ? map['receiver'].toString()
+                        //     : map['sender'].toString();
+                        // if (map['massage'].toString() ==
+                        //     'welcome $n send you request') {
+                        //   var v = (map['rphone'].toString() != phone)
+                        //       ? map['rimage']
+                        //       : map['simage'];
+
+                        //   firstdialog(v, n);
+                        // }
+
                         return ListTile(
                           leading: (map['rimage'] == null)
                               ? CircleAvatar(
@@ -335,12 +352,19 @@ class _ChatsState extends State<Chats> {
                                     style: sheet.boldBold(Colors.white),
                                   ),
                                 )
-                              : CircleAvatar(
-                                  backgroundColor: Colors.blue,
-                                  radius: 30,
-                                  backgroundImage:
-                                      NetworkImage(map['rimage'].toString()),
-                                ),
+                              : (map['rphone'].toString() != phone)
+                                  ? CircleAvatar(
+                                      backgroundColor: Colors.blue,
+                                      radius: 30,
+                                      backgroundImage: NetworkImage(
+                                          map['rimage'].toString()),
+                                    )
+                                  : CircleAvatar(
+                                      backgroundColor: Colors.blue,
+                                      radius: 30,
+                                      backgroundImage: NetworkImage(
+                                          map['simage'].toString()),
+                                    ),
                           title: Text((map['rphone'].toString() != phone)
                               ? map['receiver'].toString()
                               : map['sender'].toString()),
@@ -416,6 +440,61 @@ class _ChatsState extends State<Chats> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     names,
+                    style: sheet.mediumBold(Colors.black),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              Container(
+                height: 6.h,
+                width: 70.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(width: .5, color: Colors.grey)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    phone,
+                    style: sheet.mediumBold(Colors.black),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+  firstdialog(images, name) => showDialog(
+      context: context,
+      builder: (_) {
+        return Container(
+          color: Colors.white,
+          margin: sheet.pads(3.w, 5.h),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 5.h,
+              ),
+              CircleAvatar(
+                radius: 55,
+                backgroundImage: NetworkImage(images.toString()),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              Container(
+                height: 6.h,
+                width: 70.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(width: .5, color: Colors.grey)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    name,
                     style: sheet.mediumBold(Colors.black),
                   ),
                 ),
