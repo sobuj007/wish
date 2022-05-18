@@ -54,8 +54,8 @@ class _MainLayoutsState extends State<MainLayouts> {
               // activeBackgroundColor: Colors.blue.shade300,
             ),
             BottomNavBarItem(
-              title: 'Call',
-              icon: const Icon(Icons.phone),
+              title: 'Contact',
+              icon: const Icon(Icons.contacts),
               inactiveColor: Colors.black,
               activeColor: Colors.blue.shade300,
               // activeBackgroundColor: Colors.blue.shade300,

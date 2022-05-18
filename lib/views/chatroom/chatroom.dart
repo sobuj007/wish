@@ -48,15 +48,27 @@ class _ChatroomState extends State<Chatroom> {
   bool _localUserJoined = false;
   late RtcEngine _engine;
   String appId = '020f338d91ba4be49e1f22232627028b';
-
+  ScrollController sc = new ScrollController();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     print(widget.senderimg);
     print(widget.receiverimg);
+
     getuserdatas();
+    _scrollToEnd();
     // loadImage();
+  }
+
+  bool _needsScroll = false;
+
+  _scrollToEnd() async {
+    sc.animateTo(
+      sc.position.maxScrollExtent,
+      curve: Curves.ease,
+      duration: Duration(seconds: 2),
+    );
   }
 
   var phonenumbers;
@@ -211,6 +223,7 @@ class _ChatroomState extends State<Chatroom> {
       ),
       body: SafeArea(
           child: Container(
+        height: 75.h,
         child: StreamBuilder(
           stream: firebaseFirestore
               .collection('chatroom')
@@ -230,10 +243,15 @@ class _ChatroomState extends State<Chatroom> {
                         opacity: .3,
                         fit: BoxFit.cover)),
                 child: ListView.builder(
+                  controller: sc,
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     Map<String, dynamic> map = snapshot.data!.docs[index].data()
                         as Map<String, dynamic>;
+                    if (_needsScroll) {
+                      _scrollToEnd();
+                      _needsScroll = false;
+                    }
                     if (map['sphone'].toString() == phonenumbers) {
                       return Expanded(
                         child: Container(
@@ -377,6 +395,8 @@ class _ChatroomState extends State<Chatroom> {
       'attachment': '',
       'time': Timestamp.now(),
     });
+    _inputs.clear();
+    _needsScroll = true;
   }
 
   showdia() => showDialog(
