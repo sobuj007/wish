@@ -231,10 +231,12 @@ class _ChatsState extends State<Chats> {
         .collection('userinfo')
         .doc(phone)
         .update({'fcmtoken': ''});
+    print("userstable");
     FirebaseFirestore.instance
         .collection('alltoken')
         .doc(phone)
         .update({'fcmtoken': ''});
+    print("object");
     await SharedPrefManager.setToken('');
     await SharedPrefManager.setFCMToken('');
     await SharedPrefManager.setUserLogin(false);
@@ -291,8 +293,7 @@ class _ChatsState extends State<Chats> {
   chatsitem() {
     var uids = uid.toString();
 
-    return Container(
-      height: 80.h,
+    return Expanded(
       child: ListView.builder(
         itemCount: room.length,
         itemBuilder: (BuildContext context, int i) {
@@ -301,109 +302,107 @@ class _ChatsState extends State<Chats> {
           // print('hello' + d.toString());
           // print('reciver name' + n.toString());
           Future.delayed(Duration(seconds: 2)).then((value) {});
-          return Container(
-            height: 10.h,
-            margin: EdgeInsets.symmetric(horizontal: 3.w),
+          return Expanded(
             // color: Colors.grey.shade100,
 
-            child: Card(
-              child: StreamBuilder<QuerySnapshot>(
-                  stream: firebaseFirestore
-                      .collection('chatroom')
-                      .doc(d)
-                      .collection('chat')
-                      .orderBy("time", descending: true)
-                      .snapshots(),
-                  // initialData: initialData,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data == null) {
-                        return Container(
-                          child: CircularProgressIndicator(),
-                        );
-                      } else if (snapshot.data.toString().length == 0) {
-                        return Center(
-                          child: Text("Welcome"),
-                        );
-                      } else {
-                        Map<String, dynamic> map = snapshot.data?.docs[0].data()
-                            as Map<String, dynamic>;
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Card(
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: firebaseFirestore
+                        .collection('chatroom')
+                        .doc(d)
+                        .collection('chat')
+                        .orderBy("time", descending: true)
+                        .snapshots(),
+                    // initialData: initialData,
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasData) {
+                        if (snapshot.data == null) {
+                          return Container(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.data.toString().length == 0) {
+                          return Center(
+                            child: Text("Welcome"),
+                          );
+                        } else {
+                          Map<String, dynamic> map = snapshot.data?.docs[0]
+                              .data() as Map<String, dynamic>;
+                          Future.delayed(Duration(seconds: 3));
+                          var titlename;
+                          var titleimage;
+                          var titlephone;
 
-                        // var n = (map['rphone'].toString() != phone)
-                        //     ? map['receiver'].toString()
-                        //     : map['sender'].toString();
-                        // if (map['massage'].toString() ==
-                        //     'welcome $n send you request') {
-                        //   var v = (map['rphone'].toString() != phone)
-                        //       ? map['rimage']
-                        //       : map['simage'];
+                          if (map['rphone'].toString() == phone.toString()) {
+                            titlename = map['sender'].toString();
+                            titleimage = map['simage'];
+                            titlephone = map['sphone'];
+                          }
+                          if (map['sphone'] == phone) {
+                            titlename = map['receiver'].toString();
+                            titleimage = map['rimage'];
+                            titlephone = map['rphone'];
+                          }
+                          print(titlename);
+                          // print(map['rphone']);
+                          // print(map['sender']);
+                          // print(map['sphone']);
 
-                        //   firstdialog(v, n);
-                        // }
-
-                        return ListTile(
-                          leading: (map['rimage'] == null)
-                              ? CircleAvatar(
-                                  backgroundColor: Colors.blue,
-                                  radius: 30,
-                                  child: Text(
-                                    'w',
-                                    style: sheet.boldBold(Colors.white),
-                                  ),
-                                )
-                              : (map['rphone'].toString() != phone)
-                                  ? CircleAvatar(
-                                      backgroundColor: Colors.blue,
-                                      radius: 30,
-                                      backgroundImage: NetworkImage(
-                                          map['rimage'].toString()),
-                                    )
-                                  : CircleAvatar(
-                                      backgroundColor: Colors.blue,
-                                      radius: 30,
-                                      backgroundImage: NetworkImage(
-                                          map['simage'].toString()),
+                          return ListTile(
+                            leading: (map['rimage'] == null)
+                                ? CircleAvatar(
+                                    backgroundColor: Colors.blue,
+                                    radius: 30,
+                                    child: Text(
+                                      'w',
+                                      style: sheet.boldBold(Colors.white),
                                     ),
-                          title: Text((map['rphone'].toString() != phone)
-                              ? map['receiver'].toString()
-                              : map['sender'].toString()),
-                          subtitle: (map['message'].toString() != null)
-                              ? Text(
-                                  map['message'].toString(),
-                                  style: sheet.regularMedium(Colors.black),
-                                )
-                              : Text(''),
-                          onTap: () {
-                            print('object' + map['receiver'].toString());
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor: Colors.blue,
+                                    radius: 30,
+                                    backgroundImage:
+                                        NetworkImage(titleimage.toString()),
+                                  ),
+                            title: Text(titlename.toString()),
+                            subtitle: (map['message'].toString() != null)
+                                ? Text(
+                                    map['message'].toString(),
+                                    style: sheet.regularMedium(Colors.black),
+                                  )
+                                : Text(''),
+                            onTap: () {
+                              print('object' + map['receiver'].toString());
 
-                            print(n.toString() +
-                                "name.toString() + phone.toString()");
-                            print('objectr' +
-                                map['rimage'].toString().toString());
-                            print('objectU' + profileimage.toString());
+                              print(n.toString() +
+                                  "name.toString() + phone.toString()");
+                              print('objectr' +
+                                  map['rimage'].toString().toString());
+                              print('objectU' + profileimage.toString());
 
-                            //FirebaseMessaging.instance.subscribeToTopic('$d');
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => Chatroom(
-                                          roomid: d,
-                                          receivername:
-                                              map['receiver'].toString(),
-                                          receiverphone: map['rphone'],
-                                          receiverimg: map['rimage'].toString(),
-                                          senderphone: phone,
-                                          sender: names,
-                                          senderimg: profileimage.toString(),
-                                        )));
-                          },
-                        );
+                              //FirebaseMessaging.instance.subscribeToTopic('$d');
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => Chatroom(
+                                            roomid: d,
+                                            receivername: titlename.toString(),
+                                            receiverphone: titlephone,
+                                            receiverimg: titleimage.toString(),
+                                            senderphone: phone,
+                                            sender: names,
+                                            senderimg: profileimage.toString(),
+                                          )));
+                            },
+                          );
+                        }
+                      } else {
+                        return Container();
                       }
-                    } else {
-                      return Container();
-                    }
-                  }),
+                    }),
+              ),
             ),
           );
         },

@@ -2,6 +2,8 @@ import 'package:Wish/main.dart';
 import 'package:Wish/notifiy/Messaging.dart';
 import 'package:Wish/views/callerscreen/CallScreen.dart';
 import 'package:Wish/views/mainlayouts.dart';
+import 'package:Wish/views/pages/index.dart';
+import 'package:Wish/views/pages/voiceCall.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
@@ -13,6 +15,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Sharedpref/SharedPrefManager.dart';
+import '../pages/call.dart';
 
 class Chatroom extends StatefulWidget {
   final roomid;
@@ -146,9 +149,7 @@ class _ChatroomState extends State<Chatroom> {
                 (route) => false);
           },
         ),
-        title: Text((widget.receiverphone != phonenumbers)
-            ? widget.receivername
-            : widget.sender),
+        title: Text(widget.receivername),
         actions: [
           GestureDetector(
             child: Container(
@@ -157,10 +158,25 @@ class _ChatroomState extends State<Chatroom> {
                 child: Icon(Icons.phone),
               ),
             ),
-            onTap: () {
-              // Navigator.push(
-              //     context, MaterialPageRoute(builder: (_) => CallScreen()));
-              shoaudioCalldia();
+            onTap: () async {
+              var channelname = 'testchannel';
+
+              if (channelname.isNotEmpty) {
+                // await for camera and mic permissions before pushing video page
+                await _handleCameraAndMic(Permission.camera);
+                await _handleCameraAndMic(Permission.microphone);
+                // push video page with given channel name
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VoiceCall(
+                      channelName: channelname,
+                      role: ClientRole.Broadcaster,
+                      image: widget.receiverimg,
+                    ),
+                  ),
+                );
+              }
             },
           ),
           GestureDetector(
@@ -171,8 +187,24 @@ class _ChatroomState extends State<Chatroom> {
                 child: Icon(Icons.videocam),
               ),
             ),
-            onTap: () {
-              showdia();
+            onTap: () async {
+              var channelname = 'testchannel';
+
+              if (channelname.isNotEmpty) {
+                // await for camera and mic permissions before pushing video page
+                await _handleCameraAndMic(Permission.camera);
+                await _handleCameraAndMic(Permission.microphone);
+                // push video page with given channel name
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CallPage(
+                      channelName: channelname,
+                      role: ClientRole.Broadcaster,
+                    ),
+                  ),
+                );
+              }
             },
           ),
         ],
@@ -282,7 +314,7 @@ class _ChatroomState extends State<Chatroom> {
                       ),
                     ),
                     onTap: () {
-                      if (_inputs.text == null) {
+                      if (_inputs.text == '') {
                       } else {
                         sendmessage();
                       }
@@ -297,19 +329,38 @@ class _ChatroomState extends State<Chatroom> {
     );
   }
 
+  Future<void> _handleCameraAndMic(Permission permission) async {
+    final status = await permission.request();
+    print(status);
+  }
+
+  Messaging m = Messaging();
   sendmessage() async {
     print('objectr' + widget.receiverimg.toString());
     print('objectU' + widget.senderimg.toString());
-    var token = await SharedPrefManager.getFCMToken();
+    String token = await SharedPrefManager.getFCMToken();
+    print("lol " + token);
 
-    DocumentSnapshot variable = await FirebaseFirestore.instance
-        .collection('alltokens')
-        .doc(widget.receiverphone)
-        .get();
-    var ftokens = variable['fcmtoken'].toString();
-    print(ftokens.toString());
+    var tok = '';
+
+    print(widget.receiverphone);
+
     var b = widget.receiverphone;
-    Messaging().sendtoSingel("Whis $b", _inputs.text.toString(), ftokens);
+    await FirebaseFirestore.instance
+        .collection("alltokens")
+        .doc(b)
+        .snapshots()
+        .listen((event) {
+      setState(() {
+        tok = event.get("fcmtoken");
+        print("bal" + tok);
+      });
+    });
+    var title = "Wish $b";
+    var body = _inputs.text.toString();
+
+    m.sendtoSingel(title, body, tok);
+
     await FirebaseFirestore.instance
         .collection('chatroom')
         .doc(widget.roomid)
@@ -326,7 +377,6 @@ class _ChatroomState extends State<Chatroom> {
       'attachment': '',
       'time': Timestamp.now(),
     });
-    _inputs.clear();
   }
 
   showdia() => showDialog(
@@ -453,55 +503,22 @@ class _ChatroomState extends State<Chatroom> {
       );
     }
   }
-}
 
-//  appBar: AppBar(
-//         title: Text("data"),
-//       ),
-//       body: SafeArea(
-//         child: Container(child: Text(";l;l")),
-//       ),
-//       floatingActionButton: Container(
-//         color: Colors.grey,
-//         height: 8.h,
-//         alignment: Alignment.center,
-//         child: Row(
-//           children: [
-//             Container(
-//               color: Colors.orange,
-//               child: TextField(
-//                   controller: _inputs,
-//                   decoration: InputDecoration(
-//                       hintText: 'your message',
-//                       contentPadding:
-//                           EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.w),
-//                       border: OutlineInputBorder(
-//                           borderSide:
-//                               BorderSide(width: 1, color: Colors.black)))),
-//             ),
-//             Container(
-//               width: 20.w,
-//               padding: EdgeInsets.symmetric(horizontal: 1.w),
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Icon(
-//                     Icons.emoji_emotions,
-//                     size: 30,
-//                   ),
-//                   SizedBox(),
-//                   GestureDetector(
-//                     child: Icon(
-//                       Icons.send,
-//                       size: 30,
-//                     ),
-//                     onTap: () {
-//                       sendmessage();
-//                     },
-//                   )
-//                 ],
-//               ),
-//             )
-//           ],
-//         ),
-//       ),
+  // sensdnotification() async {
+  //   var tok = '';
+
+  //   print(widget.receiverphone);
+  //   await FirebaseFirestore.instance
+  //       .collection("alltokens")
+  //       .doc(widget.receiverphone)
+  //       .snapshots()
+  //       .listen((event) {
+  //     setState(() {
+  //       tok = event.get("fcmtoken");
+  //       print("bal" + tok);
+  //     });
+  //   });
+  //   print(tok);
+  //   // Messaging().sendtoSingel(widget.receivername, _inputs.text.toString(), tok);
+  // }
+}

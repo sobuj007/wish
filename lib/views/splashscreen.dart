@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   starttimer() async {
-    Messaging().sendtoAll("Wish", "welcome to wish");
+    // Messaging().sendtoAll("Wish", "welcome to wish");
 
     Future.delayed(Duration(seconds: 4)).then((value) => {
           Navigator.pushAndRemoveUntil(context,

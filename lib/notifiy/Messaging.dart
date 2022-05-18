@@ -66,8 +66,11 @@ class Messaging {
   sendtoSingel(title, messagedata, fcm) async {
     var headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'key=$keys'
+      'Authorization':
+          'key=AAAAQqrcf8Y:APA91bFV0_ezt5MKYEo7zwc0M55B_rpvh5mM1mE65oH8SknNGNYtuutaphMdn0OvsO14_VYDfNiAu7sPcF5JZfhD-ZiF5WZbsqjoXwK-BY3bZklOqgckjElAThe9xy9U7Cb-O7LeAN6l'
     };
+    var request =
+        http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
     request.body = json.encode({
       "to": "$fcm",
       "priority": "high",

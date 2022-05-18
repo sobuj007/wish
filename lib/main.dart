@@ -24,7 +24,7 @@ itit() async {
   fmassage.subscribeToTopic('all');
   String? fcmtoken = await FirebaseMessaging.instance.getToken();
   SharedPrefManager.setFCMToken(fcmtoken);
-  print(fcmtoken.toString());
+  //print(fcmtoken.toString());
   final firebaseMessaging = FCM();
   firebaseMessaging.setNotifications();
 
