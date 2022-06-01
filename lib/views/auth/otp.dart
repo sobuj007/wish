@@ -180,19 +180,21 @@ class _OtpVerificationState extends State<OtpVerification> {
       var d;
       if (result.additionalUserInfo!.isNewUser == true) {
         if (result.user!.displayName.toString() == null) {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                   builder: (_) => ChangeProfiles(
                         u: userdata,
-                      )));
+                      )),
+              (route) => false);
         } else {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                   builder: (_) => ChangeProfiles(
                         u: userdata,
-                      )));
+                      )),
+              (route) => false);
         }
       } else {
         checkuser(uid, result.user!.phoneNumber.toString());
