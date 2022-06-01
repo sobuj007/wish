@@ -199,6 +199,10 @@ class _OtpVerificationState extends State<OtpVerification> {
       }
     }).catchError((e) {
       print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Somthing Worng !'),
+        backgroundColor: Colors.red,
+      ));
     });
   }
 

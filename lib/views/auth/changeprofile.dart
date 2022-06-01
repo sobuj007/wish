@@ -42,27 +42,27 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
   File? _photo;
   final ImagePicker _picker = ImagePicker();
 
-  Future imgFromGallery() async {
+  Future imgFromGallery(context) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     setState(() {
       if (pickedFile != null) {
         _photo = File(pickedFile.path);
         print(_photo);
-        uploadFile();
+        uploadFile(context);
       } else {
         print('No image selected.');
       }
     });
   }
 
-  Future imgFromCamera() async {
+  Future imgFromCamera(context) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
 
     setState(() {
       if (pickedFile != null) {
         _photo = File(pickedFile.path);
-        uploadFile();
+        uploadFile(context);
       } else {
         print('No image selected.');
       }
@@ -70,7 +70,11 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
   }
 
   var finalpath = '';
-  Future uploadFile() async {
+  Future uploadFile(context) async {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Image uploading .. !'),
+      backgroundColor: Colors.red,
+    ));
     if (_photo == null) return;
     final fileName = basename(_photo!.path);
     final destination = 'files/$fileName';
@@ -81,6 +85,10 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
     finalpath = await tsnapshot.ref.getDownloadURL();
 
     print(finalpath);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Wait a second .. !'),
+      backgroundColor: Colors.red,
+    ));
     Future.delayed(Duration(seconds: 3));
     setState(() {});
   }
@@ -223,14 +231,14 @@ class _ChangeProfilesState extends State<ChangeProfiles> {
                       leading: new Icon(Icons.photo_library),
                       title: new Text('Gallery'),
                       onTap: () {
-                        imgFromGallery();
+                        imgFromGallery(context);
                         Navigator.of(context).pop();
                       }),
                   new ListTile(
                     leading: new Icon(Icons.photo_camera),
                     title: new Text('Camera'),
                     onTap: () {
-                      imgFromCamera();
+                      imgFromCamera(context);
                       Navigator.of(context).pop();
                     },
                   ),
